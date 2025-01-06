@@ -1,34 +1,34 @@
-const asyncHandler = require('express-async-handler')
-const parameterModel = require('./parameterModel')
+const asyncHandler = require('express-async-handler');
+const ParameterModel = require("./ParameterModel");
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
-app.use(bodyParser.json())
+class ParameterController {
 
-const insertParameter = asyncHandler(async(req, res) => {
-    await parameterModel.insertParameter(req.body)
-    res.status(200).send(`Inserted ${req.body.name} parameter`)
-})
+  getParameters = asyncHandler( async(req, res) => {
+    const analyzerId = req.query.analyzer_id ?? 0;
+    if(analyzerId > 0) {
+      const result = await ParameterModel.getParametersByAnalyzerId(analyzerId);
+      return res.status(200).json(result);
+    } else {
+      const result = await ParameterModel.getAll();
+      return res.status(200).json(result);
+    }
+  })
 
-const getParameter = asyncHandler( async(req, res) => {
-    const parameter = await parameterModel.getParameter(req.params.id)
-    res.status(200).json(parameter)
-})
+  insertParameter = asyncHandler(async(req, res) => {
+    await ParameterModel.insert(req.body)
+    return res.status(200).send(`Inserted ${req.body.name} parameter`)
+  })
 
-const getAllParameter = asyncHandler(async(req, res) => {
-    const parameters = await parameterModel.getAllParameter()
-    res.status(200).json(parameters)
-})
+  updateParameter = asyncHandler(async(req, res) => {
+    await ParameterModel.update(req.body)
+    return res.status(200).send(`Updated ${req.body.name} parameter`)
+  })
 
-const updateParameter = asyncHandler(async(req, res) => {
-    await parameterModel.updateParameter(req.body)
-    res.status(200).send(`Updated ${req.body.name} parameter`)
-})
+  deleteParameter = asyncHandler(async(req, res) => {
+    await ParameterModel.delete(req.body.id)
+    return res.status(200).send(`Deleted '${req.body.name}' parameter`)
+  })
 
-const deleteParameter = asyncHandler(async(req, res) => {
-    await parameterModel.deleteParameter(req.body.id)
-    res.status(200).send(`Deleted '${req.body.name}' parameter`)
-})
+}
 
-module.exports = {insertParameter, getParameter, getAllParameter, updateParameter, deleteParameter}
+module.exports = new ParameterController();
