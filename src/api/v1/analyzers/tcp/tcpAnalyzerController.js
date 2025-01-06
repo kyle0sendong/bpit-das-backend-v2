@@ -29,10 +29,6 @@ class TcpAnalyzerController {
     res.status(200).send(`Deleted ${req.body.name} TCP Analyzer`)
   })
 
-  getTcpWithParametersById = asyncHandler(async(req, res) => {
-    tcpAnalyzerWithParameters = await TcpAnalyzerModel.getTcpWithParametersById(req.body.id)
-    res.status(200).json(tcpAnalyzerWithParameters)
-  })
 }
 
 module.exports = new TcpAnalyzerController();

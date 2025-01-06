@@ -1,10 +1,10 @@
-const parameterModel = require('@apiV1/parameters/ParameterModel');
+const ParameterModel = require('@apiV1/parameters/ParameterModel');
 const AnalyzerBaseModel = require("../AnalyzerBaseModel");
 
 class TcpAnalyzerModel extends AnalyzerBaseModel {
-  
+
 	constructor() {
-    super('tcp_analyzers', parameterModel.getTableName);
+    super('tcp_analyzers', ParameterModel.getTableName);
 	}
 }
 
