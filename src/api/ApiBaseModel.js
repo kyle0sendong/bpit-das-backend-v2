@@ -26,7 +26,7 @@ class BaseApiModel {
     return this.executeQuery(query);
   }
 
-  getAllById(id) {
+  getById(id) {
     const query = `
       SELECT *
       FROM ${this.tableName}
