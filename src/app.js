@@ -14,7 +14,7 @@ app.use(cors({
   origin: true
 }));
 
-app.use("/", routes);
+app.use("/api", routes);
 
 app.get('/health', (req, res) => {
   res.status(200).send("Node Health: Okay")
