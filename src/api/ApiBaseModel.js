@@ -7,10 +7,14 @@ class BaseApiModel {
 
   executeQuery(query, params = []) {
     return new Promise((resolve, reject) => {
-      db.query(query, params, (error, result) => {
-        if (error) return reject(error);
+      db.query(
+        query, 
+        params, 
+        (error, result) => {
+        if (error) reject(error);
         resolve(result);
-      });
+        }
+      );
     });
   }
 
