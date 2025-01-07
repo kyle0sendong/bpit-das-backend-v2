@@ -1,59 +1,45 @@
-const db = require('@database');
+const ApiBaseModel = require("@api/ApiBaseModel");
 
-module.exports = class Model {
+class UserLogModel extends ApiBaseModel {
 
-  constructor(table) {
-      this.table = table
-  }
-
-  insertLog(data) {
-    const query = 'INSERT INTO ?? (username, full_name, date, time, tags, changes) VALUES (?,?,?,?,?,?)'
-    return new Promise( (resolve, reject) => {
-      db.query(query, [this.table, data.username, data.full_name, data.date, data.time, data.tags, data.changes], (error, result) => {
-          if(error) throw error;
-          resolve(result)
-      })
-    })
+  constructor() {
+      super("user_logs");
   }
 
   getLatestLog() {
-    const query = 'SELECT * FROM ?? WHERE id = (SELECT MAX(id) FROM ??)'
-    return new Promise ( (resolve, reject) => {
-      db.query(query, [this.table, this.table],
-        (error, result) => {
-          if(error) throw error;
-          resolve(result)
-        })
-    })
+    const query = `
+      SELECT * ${this.tableName}
+      ORDER BY id DESC
+      LIMIT 1
+    `;
+    return this.executeQuery(query);
   }
   
-  getLog(data) {
-    const query = 'SELECT * FROM ?? WHERE date = ?'
-    return new Promise( (resolve, reject) => {
-      db.query(query, [this.table, data.date], (error, result) => {
-          if(error) throw error;
-          resolve(result);
-      })
-    })
+  getLogByDate(date) {
+    const query = `
+      SELECT * 
+      FROM ${this.tableName} 
+      WHERE date = ?
+    `;
+    return this.executeQuery(query, [date]);
   }
 
-  getLogDateRange(data) {
-    const query = 'SELECT * FROM ?? WHERE date >= ? and date <= ?'
-    return new Promise( (resolve, reject) => {
-      db.query(query, [this.table, data.startDate, data.endDate], (error, result) => {
-          if(error) throw error;
-          resolve(result);
-      })
-    })
+  getLogByDateRange(data) {
+    const query = `
+      SELECT * 
+      FROM ${this.tableName} 
+      WHERE date >= ? and date <= ?
+    `;
+    return this.executeQuery(query, [data.startDate, data.endDate]);
   }
 
-  getDistinctDateLogs() {
-    const query = 'SELECT DISTINCT date FROM ??'
-    return new Promise( (resolve, reject) => {
-      db.query(query, [this.table], (error, result)=> {
-        if(error) throw error
-        resolve(result)
-      })
-    })
+  getDistinctDate() {
+    const query = `
+      SELECT DISTINCT date 
+      FROM ${this.tableName}
+    `;
+    return this.executeQuery(query);
   }
 }
+
+module.exports = new UserLogModel();
