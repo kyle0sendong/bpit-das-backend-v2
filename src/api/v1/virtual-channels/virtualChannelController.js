@@ -4,13 +4,13 @@ const VirtualChannelModel = require('./VirtualChannelModel');
 class VirtualChannelController {
 
   getVirtualChannel = asyncHandler( async(req, res) => {
-    const id = req.params.id ?? 0;
-    if(id > 0) {
-      const data = await VirtualChannelModel.getById(req.params.id);
-      return res.status(200).json(data);
+    const analyzerId = req.query.id ?? 0;
+    if(analyzerId > 0) {
+      const result = await VirtualChannelModel.getVirtualChannelsByAnalyzerId(analyzerId);
+      return res.status(200).json(result);
     } else {
-      const data = await VirtualChannelModel.getAll();
-      return res.status(200).json(data);
+      const result = await VirtualChannelModel.getAll();
+      return res.status(200).json(result);
     }
   })
   
