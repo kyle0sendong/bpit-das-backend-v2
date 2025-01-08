@@ -7,7 +7,7 @@ class CurrentValuesModel extends ApiBaseModel {
    super('current_values');
   }
 
-  getCurrentValuesByTcpId = (id) => {
+  getCurrentValuesByAnalyzerId = (id) => {
     const query = "SELECT * FROM ?? WHERE tcp_id = ?"
     return new Promise( (resolve,result) => {
 
