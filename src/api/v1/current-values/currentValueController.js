@@ -1,29 +1,32 @@
-const asyncHandler = require('express-async-handler')
-const currentValuesModel = require("./currentValueModel")
+const asyncHandler = require('express-async-handler');
+const CurrentValueModel = require("./CurrentValueModel");
 
-const express = require("express")
-const bodyParser = require("body-parser")
-const app = express()
-app.use(bodyParser.json())
 
-const insertCurrentValue = asyncHandler( async(req, res) => {
-  await currentValuesModel.insertCurrentValue(req.body)
-  res.status(200).send(`Inserted current value for new parameter`)
-})
+class CurrentValueController {
 
-const getCurrentValueTcp = asyncHandler( async(req, res) => {
-  const currentValues = await currentValuesModel.getAllCurrentValuesTcp(req.params.id)
-  res.status(200).json(currentValues)
-})
+  getCurrentValues = asyncHandler( async(req, res) => {
+    const id = req.query.id ?? 0;
 
-const getAllCurrentValues = asyncHandler( async(req, res) => {
-  const currentValues = await currentValuesModel.getAllCurrentValues()
-  res.status(200).json(currentValues)
-})
+    if (id > 0) {
+      const result = await CurrentValueModel.getAllCurrentValuesTcp(req.query.id);
+      return res.status(200).json(result);
+    } else {
+      const currentValues = await CurrentValueModel.getAll();
+      return res.status(200).json(currentValues);
+    }
+  })
+  
+  insertCurrentValue = asyncHandler( async(req, res) => {
+    await CurrentValueModel.insert(req.body);
+    return res.status(200).send(`Inserted current value for new parameter`);
+  })
+  
+  updateCurrentValue = asyncHandler( async(req, res) => {
+    await CurrentValueModel.update(req.body);
+    return res.status(200).send(`Inserted current value for new parameter`);
+  })
+}
 
-const updateCurrentValue = asyncHandler( async(req, res) => {
-  await currentValuesModel.updateCurrentValue(req.body)
-  res.status(200).send(`Inserted current value for new parameter`)
-})
 
-module.exports = {insertCurrentValue, getAllCurrentValues, getCurrentValueTcp, updateCurrentValue}
+
+module.exports = new CurrentValueController();

@@ -7,11 +7,16 @@ const SiteController = require("./sites/SiteController");
 const TimebaseController = require("./timebases/TimebaseController");
 const UserLogController = require("./user-logs/UserLogController");
 const VirtualChannelController = require("./virtual-channels/VirtualChannelController");
+const CurrentValueController = require("./current-values/CurrentValueController");
 
 router.get('/tcp-analyzers', TcpAnalyzerController.getTcpAnalyzer);
 router.post('/tcp-analyzers', TcpAnalyzerController.insertTcpAnalyzer);
 router.patch('/tcp-analyzers', TcpAnalyzerController.updateTcpAnalyzer);
 router.delete('/tcp-analyzers', TcpAnalyzerController.deleteTcpAnalyzer);
+
+router.get('/current-values', CurrentValueController.getCurrentValues);
+router.post('/current-values', CurrentValueController.insertCurrentValue);
+router.update('/current-values', CurrentValueController.updateCurrentValue);
 
 router.get('/parameters', ParameterController.getParameters);
 router.post('/parameters', ParameterController.insertParameter);
