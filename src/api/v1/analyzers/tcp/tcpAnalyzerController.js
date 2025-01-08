@@ -25,7 +25,7 @@ class TcpAnalyzerController {
   })
   
   deleteTcpAnalyzer = asyncHandler( async(req, res) => {
-    await TcpAnalyzerModel.delete(req.body.id)
+    await TcpAnalyzerModel.delete(req.query.id)
     return res.status(200).send(`Deleted ${req.body.name} TCP Analyzer`)
   })
 

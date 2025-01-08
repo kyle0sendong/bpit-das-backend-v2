@@ -19,8 +19,8 @@ class TimebaseController {
   })
 
   deleteTimebase = asyncHandler(async(req, res) => {
-    await timebaseModel.delete(req.body);
-    return res.status(200).send(`Deleted timebase with id:${req.body.id}`);
+    await timebaseModel.delete(req.query.id);
+    return res.status(200).send(`Deleted timebase with id:${req.query.id}`);
   })
 }
 

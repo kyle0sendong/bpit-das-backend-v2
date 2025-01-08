@@ -25,7 +25,7 @@ class VirtualChannelController {
   })
   
   deleteVirtualChannel = asyncHandler( async(req, res) => {
-    await VirtualChannelModel.delete(req.body.id);
+    await VirtualChannelModel.delete(req.query.id);
     return res.status(200).send(`Deleted Virtual Channel`);
   })
 }

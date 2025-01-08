@@ -25,8 +25,8 @@ class ParameterController {
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await ParameterModel.delete(req.body.id)
-    return res.status(200).send(`Deleted '${req.body.name}' parameter`)
+    await ParameterModel.delete(req.query.id)
+    return res.status(200).send(`Deleted '${req.query.name}' parameter`)
   })
 
 }
