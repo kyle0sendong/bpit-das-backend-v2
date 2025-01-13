@@ -16,7 +16,7 @@ router.delete('/tcp-analyzers', TcpAnalyzerController.deleteTcpAnalyzer);
 
 router.get('/current-values', CurrentValueController.getCurrentValues);
 router.post('/current-values', CurrentValueController.insertCurrentValue);
-router.update('/current-values', CurrentValueController.updateCurrentValue);
+router.patch('/current-values', CurrentValueController.updateCurrentValue);
 
 router.get('/parameters', ParameterController.getParameters);
 router.post('/parameters', ParameterController.insertParameter);
@@ -31,8 +31,8 @@ router.post('/timebases', TimebaseController.insertTimebase);
 router.patch('/timebases', TimebaseController.updateTimebase);
 router.delete('/timebases', TimebaseController.deleteTimebase);
 
-router.get('/user-logs', UserLogController.getUserLog);
-router.post('/user-logs', UserLogController.insertLog);
+router.get('/user-logs', UserLogController.getUserLogsByDate);
+router.get('/log-distinct-dates', UserLogController.getDistinctDate);
 
 router.get('/virtual-channels', VirtualChannelController.getVirtualChannel);
 router.post('/virtual-channels', VirtualChannelController.insertVirtualChannel);

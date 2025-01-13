@@ -1,24 +1,25 @@
 const asyncHandler = require('express-async-handler');
 const UserLogModel = require('./UserLogModel');
+const { getDateTodayToTomorrow } = require("@utils/date");
 
 class UserLogController {
 
-  getUserLog = asyncHandler( async(req, res) => {
-    const getType = req.query.getType ?? "latestLog";
-    switch(getType) {
-      case "latestLog":
-        const latestLog = await UserLogModel.getLatestLog();
-        return res.status(200).json(latestLog);
-      case "logByDate":
-        const logByDate = await UserLogModel.getLogByDate(req.query.date);
-        return res.status(200).json(logByDate);
-      case "logByDateRange":
-        const logByDateRange = await UserLogModel.getLogByDateRange(req.query);
-        return res.status(200).json(logByDateRange);
-      case "distinctDate":
-        const dates = await UserLogModel.getDistinctDate();
-        return res.status(200).json(dates);
-    }
+  getLatestLog = asyncHandler( async(req, res) => {
+    const latestLog = await UserLogModel.getLatestLog();
+    return res.status(200).json(latestLog);
+  })
+
+  getDistinctDate = asyncHandler( async(req, res) => {
+    const dates = await UserLogModel.getDistinctDate();
+    return res.status(200).json(dates);
+  })
+
+  getUserLogsByDate = asyncHandler( async(req, res) => {
+    const [from, to] = getDateTodayToTomorrow();
+    const dateFrom = req.query.from == undefined ? from : req.query.from;
+    const dateTo = req.query.to == undefined ?  from : req.query.to;
+    const logsByDate = await UserLogModel.getLogByDate([dateFrom, dateTo]);
+    return res.status(200).json(logsByDate);
   })
 
   insertLog = asyncHandler(async(req,res) => {

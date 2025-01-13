@@ -15,15 +15,6 @@ class UserLogModel extends ApiBaseModel {
     return this.executeQuery(query);
   }
   
-  getLogByDate(date) {
-    const query = `
-      SELECT * 
-      FROM ${this.tableName} 
-      WHERE date = ?
-    `;
-    return this.executeQuery(query, [date]);
-  }
-
   getLogByDateRange(data) {
     const query = `
       SELECT * 
