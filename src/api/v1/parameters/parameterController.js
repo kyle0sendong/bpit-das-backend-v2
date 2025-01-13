@@ -1,10 +1,11 @@
 const asyncHandler = require('express-async-handler');
 const ParameterModel = require("./ParameterModel");
+const { createRandomNumber } = require("@utils/rng");
 
 class ParameterController {
 
   getParameters = asyncHandler( async(req, res) => {
-    const analyzerId = req.query.analyzer_id ?? 0;
+    const analyzerId = req.query.id ?? 0;
     if(analyzerId > 0) {
       const result = await ParameterModel.getParametersByAnalyzerId(analyzerId);
       return res.status(200).json(result);
@@ -15,8 +16,31 @@ class ParameterController {
   })
 
   insertParameter = asyncHandler(async(req, res) => {
-    await ParameterModel.insert(req.body)
+
+    const numberOfParameter = req.body.number ?? 1;
+    const tcpId = req.body.id ?? 0;
+    const tcpName = req.body.name ?? undefined;
+    const allParameters = [];
+    for(let i = 0; i < numberOfParameter; i++) {
+      const randomNumber = createRandomNumber();
+      const parameterData = {
+        name: `${tcpName}-${randomNumber}`,
+        unit: "asd",
+        enable: 1,
+        request_interval: 5,
+        format: "testing",
+        function_code: "testing",
+        start_register_address: 1,
+        register_count: 1,
+        formula: "x * 1",
+        tcp_analyzer_id: tcpId
+      }
+      allParameters.push(parameterData);
+    }
+    console.log(allParameters)
+    await ParameterModel.insertParameter(allParameters)
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
+
   })
 
   updateParameter = asyncHandler(async(req, res) => {

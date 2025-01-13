@@ -13,6 +13,18 @@ class ParameterModel extends ApiBaseModel {
     `
     return this.executeQuery(query, [id]);
   }
+
+  insertParameter(data) {
+    const columns = Object.keys(data[0]);
+    const values = data.map(item => columns.map(col => item[col]));
+    
+    const query = `
+      INSERT INTO ${this.tableName} (${columns.join(", ")})
+      VALUES ?
+    `;
+
+    return this.executeQuery(query, [values])
+  }
 }
 
 module.exports = new ParameterModel();
