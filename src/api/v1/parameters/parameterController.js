@@ -37,15 +37,13 @@ class ParameterController {
       }
       allParameters.push(parameterData);
     }
-    console.log(allParameters)
     await ParameterModel.insertParameter(allParameters)
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
-
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await ParameterModel.update(req.body)
-    return res.status(200).send(`Updated ${req.body.name} parameter`)
+    await ParameterModel.updateParameter(req.body)
+    return res.status(200).send(`Updated parameters`)
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
