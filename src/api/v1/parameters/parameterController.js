@@ -24,7 +24,7 @@ class ParameterController {
     for(let i = 0; i < numberOfParameter; i++) {
       const randomNumber = createRandomNumber();
       const parameterData = {
-        name: `${tcpName}-${randomNumber}`,
+        name: `${tcpName}_${randomNumber}`,
         unit: "asd",
         enable: 1,
         request_interval: 5,

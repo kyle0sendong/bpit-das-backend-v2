@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const VirtualChannelModel = require('./VirtualChannelModel');
+const { createRandomNumber } = require("@utils/rng");
 
 class VirtualChannelController {
 
@@ -15,8 +16,22 @@ class VirtualChannelController {
   })
   
   insertVirtualChannel = asyncHandler( async(req, res) => {
-    await VirtualChannelModel.insert(req.body);
-    return res.status(200).send(`Inserted Virtual Channel ${req.body.name}`);
+
+    const numberOfParameter = req.body.number ?? 1;
+
+    const allParameters = [];
+    for(let i = 0; i < numberOfParameter; i++) {
+      const randomNumber = createRandomNumber();
+      const parameterData = {
+        name: `VC_${randomNumber}`,
+        unit: " ",
+        formula: "x * y"
+      }
+      allParameters.push(parameterData);
+    }
+
+    await VirtualChannelModel.insertParameter(allParameters);
+    return res.status(200).send(`Inserted Virtual Channel`);
   })
   
   updateVirtualChannel = asyncHandler( async(req, res) => {
