@@ -35,8 +35,8 @@ class VirtualChannelController {
   })
   
   updateVirtualChannel = asyncHandler( async(req, res) => {
-    await VirtualChannelModel.update(req.body);
-    return res.status(200).send(`Update Virtual Channel ${req.body.parameter_name}`);
+    await VirtualChannelModel.updateVirtualChannel(req.body);
+    return res.status(200).send(`Update Virtual Channel`);
   })
   
   deleteVirtualChannel = asyncHandler( async(req, res) => {
