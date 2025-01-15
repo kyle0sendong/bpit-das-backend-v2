@@ -3,7 +3,7 @@ const router = Router();
 
 const TcpAnalyzerController = require("./analyzers/tcp/TcpAnalyzerController");
 const ParameterController = require("./parameters/ParameterController");
-const SiteController = require("./sites/SiteController");
+const StationController = require("./stations/StationController");
 const TimebaseController = require("./timebases/TimebaseController");
 const UserLogController = require("./user-logs/UserLogController");
 const VirtualChannelController = require("./virtual-channels/VirtualChannelController");
@@ -23,8 +23,8 @@ router.post('/parameters', ParameterController.insertParameter);
 router.patch('/parameters', ParameterController.updateParameter);
 router.delete('/parameters', ParameterController.deleteParameter);
 
-router.get('/sites', SiteController.getAllSites);
-router.patch('/sites', SiteController.updateSite);
+router.get('/sites', StationController.getAllSites);
+router.patch('/sites', StationController.updateSite);
 
 router.get('/timebases', TimebaseController.getAllTimebase);
 router.post('/timebases', TimebaseController.insertTimebase);
