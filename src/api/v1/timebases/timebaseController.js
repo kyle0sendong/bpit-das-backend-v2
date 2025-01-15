@@ -14,7 +14,7 @@ class TimebaseController {
   })
 
   updateTimebase = asyncHandler(async(req, res) => {
-    await timebaseModel.update(req.body);
+    await timebaseModel.updateTimebase(req.body);
     return res.status(201).send('Updated timebase data');
   })
 
