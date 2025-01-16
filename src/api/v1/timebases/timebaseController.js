@@ -4,7 +4,7 @@ const timebaseModel = require('./timebaseModel')
 class TimebaseController {
 
   getAllTimebase = asyncHandler(async(req, res) => {
-    const timebases = await timebaseModel.getAll();
+    const timebases = await timebaseModel.getAllTimebases();
     return res.status(200).json(timebases);
   })
 

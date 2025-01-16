@@ -5,6 +5,16 @@ class TimebaseModel extends ApiBaseModel {
     super('timebases');
   }
 
+
+  getAllTimebases() {
+    const query = `
+      SELECT *
+      FROM ${this.tableName}
+      ORDER BY timebase ASC
+    `;
+    return this.executeQuery(query);
+  }
+
   updateTimebase(dataArray) {
     
     const columns = ['timebase', 'enable'];
