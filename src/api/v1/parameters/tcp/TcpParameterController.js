@@ -1,16 +1,16 @@
 const asyncHandler = require('express-async-handler');
-const ParameterModel = require("./ParameterModel");
+const TcpParameterModel = require("./TcpParameterModel");
 const { createRandomNumber } = require("@utils/rng");
 
-class ParameterController {
+class TcpParameterController {
 
   getParameters = asyncHandler( async(req, res) => {
     const analyzerId = req.query.id ?? 0;
     if(analyzerId > 0) {
-      const result = await ParameterModel.getParametersByAnalyzerId(analyzerId);
+      const result = await TcpParameterModel.getParametersByAnalyzerId(analyzerId);
       return res.status(200).json(result);
     } else {
-      const result = await ParameterModel.getAll();
+      const result = await TcpParameterModel.getAll();
       return res.status(200).json(result);
     }
   })
@@ -37,20 +37,20 @@ class ParameterController {
       }
       allParameters.push(parameterData);
     }
-    await ParameterModel.insertParameter(allParameters)
+    await TcpParameterModel.insertParameter(allParameters)
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await ParameterModel.updateParameter(req.body)
+    await TcpParameterModel.updateParameter(req.body)
     return res.status(200).send(`Updated parameters`)
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await ParameterModel.delete(req.query.id)
+    await TcpParameterModel.delete(req.query.id)
     return res.status(200).send(`Deleted '${req.query.name}' parameter`)
   })
 
 }
 
-module.exports = new ParameterController();
+module.exports = new TcpParameterController();

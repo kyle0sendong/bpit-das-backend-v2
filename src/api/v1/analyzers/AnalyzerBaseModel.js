@@ -2,9 +2,8 @@ const ApiBaseModel = require("@api/ApiBaseModel");
 
 class AnalyzerBaseModel extends ApiBaseModel {
 
-  constructor(tableName, parameterTableName) {
+  constructor(tableName) {
     super(tableName);
-    this.parameterTableName = parameterTableName;
   }
 
 }

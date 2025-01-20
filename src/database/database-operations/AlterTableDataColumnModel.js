@@ -26,22 +26,32 @@ class AlterTableDataColumnModel {
       `;
       return this.executeQuery(query);
     });
-    await Promise.all(queries);
+    return await Promise.all(queries);
   }
   
-  insertColumn(data) {
-    const tableName = data.tableName
-    const columnName = data.columnName
-    const dataType = data.dataType
-    const query = `ALTER TABLE ?? ADD ${columnName} ${dataType}`
-    return this.executeQuery(query, [tableName]);
+  async insertDataColumn(data) {
+    const timebases = await TimebaseModel.getAllTimebases();
+    const queries = timebases.map((timebase) => {
+      const tableName = `data_t${timebase.timebase}`;
+      const query = `
+        ALTER TABLE ${tableName} ADD ${data.columnName} ${data.dataType}
+      `;
+      return this.executeQuery(query);
+    });
+    return await Promise.all(queries);
   }
   
-  deleteColumn(data) {
-    const tableName = data.tableName
-    const columnName = data.columnName
-    const query = `ALTER TABLE ?? DROP ${columnName}`
-    return this.executeQuery(query, [tableName]);
+  async deleteColumn(data) {
+
+    const timebases = await TimebaseModel.getAllTimebases();
+    const queries = timebases.map((timebase) => {
+      const tableName = `data_t${timebase.timebase}`;
+      const query = `
+        ALTER TABLE ${tableName} DROP ${data.columnName}
+      `;
+      return this.executeQuery(query);
+    });
+    return await Promise.all(queries);
   }
   
 }

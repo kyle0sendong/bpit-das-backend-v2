@@ -2,7 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const TcpAnalyzerController = require("./analyzers/tcp/TcpAnalyzerController");
-const ParameterController = require("./parameters/ParameterController");
+const TcpParameterController = require("./parameters/tcp/TcpParameterController");
 const StationController = require("./stations/StationController");
 const TimebaseController = require("./timebases/TimebaseController");
 const UserLogController = require("./user-logs/UserLogController");
@@ -19,10 +19,10 @@ router.get('/current-values', CurrentValueController.getCurrentValues);
 router.post('/current-values', CurrentValueController.insertCurrentValue);
 router.patch('/current-values', CurrentValueController.updateCurrentValue);
 
-router.get('/parameters', ParameterController.getParameters);
-router.post('/parameters', ParameterController.insertParameter);
-router.patch('/parameters', ParameterController.updateParameter);
-router.delete('/parameters', ParameterController.deleteParameter);
+router.get('/parameters', TcpParameterController.getParameters);
+router.post('/parameters', TcpParameterController.insertParameter);
+router.patch('/parameters', TcpParameterController.updateParameter);
+router.delete('/parameters', TcpParameterController.deleteParameter);
 
 router.get('/sites', StationController.getAllSites);
 router.patch('/sites', StationController.updateSite);

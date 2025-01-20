@@ -1,10 +1,10 @@
 const ApiBaseModel = require("@api/ApiBaseModel");
 const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
 
-class ParameterModel extends ApiBaseModel {
+class TcpParameterModel extends ApiBaseModel {
 
   constructor() {
-    super('parameters');
+    super('tcp_parameters');
   }
 
   getParametersByAnalyzerId(id) {
@@ -42,6 +42,7 @@ class ParameterModel extends ApiBaseModel {
     }
   }
   
+  
 }
 
-module.exports = new ParameterModel();
+module.exports = new TcpParameterModel();
