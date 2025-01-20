@@ -1,4 +1,4 @@
-const ParameterBaseModel = require("@api/ParameterBaseModel");
+const ParameterBaseModel = require("../ParameterBaseModel");
 const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
 
 class TcpParameterModel extends ParameterBaseModel {
