@@ -1,4 +1,5 @@
 const ApiBaseModel = require("@api/ApiBaseModel");
+const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
 
 class ParameterModel extends ApiBaseModel {
 
@@ -14,35 +15,30 @@ class ParameterModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
-  updateParameter(dataArray) {
-    
-    const columns = ['name', 'unit', 'enable', 'request_interval', 'format', 'function_code', 'start_register_address', 'register_count', 'formula'];
-    let sql = `UPDATE ${this.tableName} SET `;
-    const values = [];
-    const ids = [];
-    dataArray.forEach(data => ids.push(data.id));
-
-    columns.forEach( column => {
-      const hasColumn = dataArray.some((data) => data[column] !== undefined)
-
-      if (hasColumn) {
-        sql += `${column} = CASE `
-        dataArray.forEach( (data) => {
-          if(data[column] != undefined) {
-            sql += `WHEN id = ? THEN ? `
-            values.push(data.id, data[column])
-          }
-        })
-        sql += `ELSE ${column} END, `
-      }
-    });
-
-    sql = sql.slice(0, -2);
-    sql += ` WHERE id IN (${ids})`
-
-    return this.executeQuery(sql, values)
-
+  getParameterById(id) {
+    const query = `
+      SELECT * FROM ${this.tableName} 
+      WHERE id = ?
+    `
+    return this.executeQuery(query, [id]);
   }
+
+  async updateParameter(dataArray) {
+    for (const data of dataArray) {
+      try {
+        const parameter = await this.getParameterById(data.id);
+        await AlterTableDataColumnModel.renameDataColumns({
+          oldName: parameter[0].name,
+          newName: `${data.name}_${data.id}`,
+          dataType: 'decimal(10,5)'
+        });
+        await this.update(data);
+      } catch (error) {
+        console.error(`Error updating parameter with ID ${data.id}:`, error);
+      }
+    }
+  }
+  
 }
 
 module.exports = new ParameterModel();

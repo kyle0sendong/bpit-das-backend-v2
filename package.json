@@ -29,7 +29,8 @@
     "@database": "./src/database/database.js",
     "@middleware": "./src/middleware",
     "@routes": "./src/routes.js",
-    "@features": "./src/features"
+    "@features": "./src/features",
+    "@databaseOperations": "./src/database/database-operations"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
