@@ -19,10 +19,10 @@ router.get('/current-values', CurrentValueController.getCurrentValues);
 router.post('/current-values', CurrentValueController.insertCurrentValue);
 router.patch('/current-values', CurrentValueController.updateCurrentValue);
 
-router.get('/parameters', TcpParameterController.getParameters);
-router.post('/parameters', TcpParameterController.insertParameter);
-router.patch('/parameters', TcpParameterController.updateParameter);
-router.delete('/parameters', TcpParameterController.deleteParameter);
+router.get('/tcp-parameters', TcpParameterController.getParameters);
+router.post('/tcp-parameters', TcpParameterController.insertParameter);
+router.patch('/tcp-parameters', TcpParameterController.updateParameter);
+router.delete('/tcp-parameters', TcpParameterController.deleteParameter);
 
 router.get('/sites', StationController.getAllSites);
 router.patch('/sites', StationController.updateSite);
