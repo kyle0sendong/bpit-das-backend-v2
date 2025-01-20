@@ -7,6 +7,18 @@ class ParameterBaseModel extends ApiBaseModel {
     super(tableName)
   }
 
+  insertParameter(data) {
+    const columns = Object.keys(data[0]);
+    const values = data.map(item => columns.map(col => item[col]));
+
+    const query = `
+      INSERT INTO ${this.tableName} (${columns.join(", ")})
+      VALUES ?
+    `;
+    
+    return this.executeQuery(query, [values])
+  }
+
   getParametersByAnalyzerId(id) {
     const query = `
       SELECT * FROM ${this.tableName} 
@@ -15,19 +27,11 @@ class ParameterBaseModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
-  getParameterById(id) {
-    const query = `
-      SELECT * FROM ${this.tableName} 
-      WHERE id = ?
-    `
-    return this.executeQuery(query, [id]);
-  }
-
   async updateParameter(dataArray) {
     for (const data of dataArray) {
       try {
         if(data.name) {
-          const parameter = await this.getParameterById(data.id);
+          const parameter = await this.getById(data.id);
           await AlterTableDataColumnModel.renameDataColumns({
             oldName: `${parameter[0].name}_${data.id}`,
             newName: `${data.name}_${data.id}`,
