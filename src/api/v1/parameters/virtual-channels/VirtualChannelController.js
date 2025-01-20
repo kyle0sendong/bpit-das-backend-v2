@@ -5,14 +5,8 @@ const { createRandomNumber } = require("@utils/rng");
 class VirtualChannelController {
 
   getVirtualChannel = asyncHandler( async(req, res) => {
-    const analyzerId = req.query.id ?? 0;
-    if(analyzerId > 0) {
-      const result = await VirtualChannelModel.getVirtualChannelsByAnalyzerId(analyzerId);
-      return res.status(200).json(result);
-    } else {
-      const result = await VirtualChannelModel.getAll();
-      return res.status(200).json(result);
-    }
+    const result = await VirtualChannelModel.getAll();
+    return res.status(200).json(result);
   })
   
   insertVirtualChannel = asyncHandler( async(req, res) => {

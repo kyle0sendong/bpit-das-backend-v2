@@ -6,7 +6,7 @@ const TcpParameterController = require("./parameters/tcp/TcpParameterController"
 const StationController = require("./stations/StationController");
 const TimebaseController = require("./timebases/TimebaseController");
 const UserLogController = require("./user-logs/UserLogController");
-const VirtualChannelController = require("./virtual-channels/VirtualChannelController");
+const VirtualChannelController = require("./parameters/virtual-channels/VirtualChannelController");
 const CurrentValueController = require("./current-values/CurrentValueController");
 const AnalyzerDataController = require("./analyzer-data/AnalyzerDataController");
 

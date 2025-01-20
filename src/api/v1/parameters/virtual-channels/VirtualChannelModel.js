@@ -1,16 +1,8 @@
-const ApiBaseModel = require("@api/ApiBaseModel");
+const ParameterBaseModel = require("@api/ParameterBaseModel");
 
-class VirtualChannelModel extends ApiBaseModel {
+class VirtualChannelModel extends ParameterBaseModel {
   constructor() {
     super("virtual_channels");
-  }
-
-  getVirtualChannelsByAnalyzerId(id) {
-    const query = `
-      SELECT * FROM ${this.tableName} 
-      WHERE tcp_analyzer_id = ?
-    `
-    return this.executeQuery(query, [id]);
   }
 
   updateVirtualChannel(dataArray) {
