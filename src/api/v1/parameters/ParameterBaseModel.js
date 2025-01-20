@@ -7,16 +7,45 @@ class ParameterBaseModel extends ApiBaseModel {
     super(tableName)
   }
 
-  insertParameter(data) {
-    const columns = Object.keys(data[0]);
-    const values = data.map(item => columns.map(col => item[col]));
-
+  async insertParameter(dataArray) {
+    const columns = Object.keys(dataArray[0]);
+    const values = dataArray.map(item => columns.map(col => item[col]));
     const query = `
       INSERT INTO ${this.tableName} (${columns.join(", ")})
       VALUES ?
     `;
-    
-    return this.executeQuery(query, [values])
+    const insertColumnPromises = dataArray.map( (data) =>
+      AlterTableDataColumnModel.insertDataColumn({
+        columnName: data.name,
+        dataType: 'decimal(10,5)'
+      })
+    )
+
+    try {
+      return await Promise.all([this.executeQuery(query, [values]), ...insertColumnPromises])
+    } catch(error) {
+      console.error(`Error inserting parameter: `, error);
+    }
+  }
+
+  async deleteParameter(id) {
+    const parameter = await this.getById(id);
+
+    const query = `
+      DELETE FROM ${this.tableName}
+      WHERE id = ?
+    `;
+
+    try {
+
+      await Promise.all([
+        this.executeQuery(query, [id]),
+        AlterTableDataColumnModel.deleteDataColumn({columnName: parameter[0].name})
+      ])
+    } catch(error) {
+      console.error(`Error inserting parameter: `, error);
+    }
+
   }
 
   getParametersByAnalyzerId(id) {
@@ -38,7 +67,7 @@ class ParameterBaseModel extends ApiBaseModel {
             dataType: 'decimal(10,5)'
           });
         }
-        await this.update(data);
+        return await this.update(data);
       } catch (error) {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
       }

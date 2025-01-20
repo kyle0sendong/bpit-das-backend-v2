@@ -41,8 +41,8 @@ class AlterTableDataColumnModel {
     return await Promise.all(queries);
   }
   
-  async deleteColumn(data) {
-
+  async deleteDataColumn(data) {
+    
     const timebases = await TimebaseModel.getAllTimebases();
     const queries = timebases.map((timebase) => {
       const tableName = `data_t${timebase.timebase}`;

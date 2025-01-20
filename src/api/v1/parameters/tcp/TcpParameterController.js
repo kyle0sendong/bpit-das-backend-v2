@@ -25,18 +25,19 @@ class TcpParameterController {
       const randomNumber = createRandomNumber();
       const parameterData = {
         name: `${tcpName}_${randomNumber}`,
-        unit: "asd",
+        unit: "N/A",
         enable: 1,
         request_interval: 5,
-        format: "testing",
-        function_code: "testing",
+        format: "N/A",
+        function_code: "N/A",
         start_register_address: 1,
         register_count: 1,
         formula: "x * 1",
-        tcp_analyzer_id: tcpId
+        analyzer_id: tcpId
       }
       allParameters.push(parameterData);
     }
+
     await TcpParameterModel.insertParameter(allParameters)
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
   })
@@ -47,7 +48,7 @@ class TcpParameterController {
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.delete(req.query.id)
+    await TcpParameterModel.deleteParameter(req.query.id)
     return res.status(200).send(`Deleted '${req.query.name}' parameter`)
   })
 
