@@ -26,12 +26,15 @@ class ParameterModel extends ApiBaseModel {
   async updateParameter(dataArray) {
     for (const data of dataArray) {
       try {
-        const parameter = await this.getParameterById(data.id);
-        await AlterTableDataColumnModel.renameDataColumns({
-          oldName: parameter[0].name,
-          newName: `${data.name}_${data.id}`,
-          dataType: 'decimal(10,5)'
-        });
+
+        if(data.name) {
+          const parameter = await this.getParameterById(data.id);
+          await AlterTableDataColumnModel.renameDataColumns({
+            oldName: `${parameter[0].name}_${data.id}`,
+            newName: `${data.name}_${data.id}`,
+            dataType: 'decimal(10,5)'
+          });
+        }
         await this.update(data);
       } catch (error) {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
