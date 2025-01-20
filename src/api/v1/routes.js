@@ -8,6 +8,7 @@ const TimebaseController = require("./timebases/TimebaseController");
 const UserLogController = require("./user-logs/UserLogController");
 const VirtualChannelController = require("./virtual-channels/VirtualChannelController");
 const CurrentValueController = require("./current-values/CurrentValueController");
+const AnalyzerDataController = require("./analyzer-data/AnalyzerDataController");
 
 router.get('/tcp-analyzers', TcpAnalyzerController.getTcpAnalyzer);
 router.post('/tcp-analyzers', TcpAnalyzerController.insertTcpAnalyzer);
@@ -38,5 +39,7 @@ router.get('/virtual-channels', VirtualChannelController.getVirtualChannel);
 router.post('/virtual-channels', VirtualChannelController.insertVirtualChannel);
 router.patch('/virtual-channels', VirtualChannelController.updateVirtualChannel);
 router.delete('/virtual-channels', VirtualChannelController.deleteVirtualChannel);
+
+router.get('/analyzer-data', AnalyzerDataController.getAnalyzerData);
 
 module.exports = router;
