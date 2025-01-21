@@ -1,6 +1,6 @@
 const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
 const ApiBaseModel = require("@api/ApiBaseModel");
-
+const { toSnakeCase } = require("@utils/strings");
 class ParameterBaseModel extends ApiBaseModel {
 
   constructor(tableName) {
@@ -16,7 +16,7 @@ class ParameterBaseModel extends ApiBaseModel {
     `;
     const insertColumnPromises = dataArray.map( (data) =>
       AlterTableDataColumnModel.insertDataColumn({
-        columnName: data.name,
+        columnName: toSnakeCase(`${data.name}_${data.analyzer_id}`),
         dataType: 'decimal(10,5)'
       })
     )
@@ -37,10 +37,9 @@ class ParameterBaseModel extends ApiBaseModel {
     `;
 
     try {
-
       await Promise.all([
         this.executeQuery(query, [id]),
-        AlterTableDataColumnModel.deleteDataColumn({columnName: parameter[0].name})
+        AlterTableDataColumnModel.deleteDataColumn({columnName: toSnakeCase(`${parameter[0].name}_${parameter[0].analyzer_id}`)})
       ])
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
@@ -57,22 +56,32 @@ class ParameterBaseModel extends ApiBaseModel {
   }
 
   async updateParameter(dataArray) {
-    for (const data of dataArray) {
+
+    const updatePromises = dataArray.map(async (data) => {
       try {
-        if(data.name) {
-          const parameter = await this.getById(data.id);
+        const parameter = await this.getById(data.id);
+        console.log(parameter[0].name, data.name)
+        if (data.name) {
           await AlterTableDataColumnModel.renameDataColumns({
-            oldName: `${parameter[0].name}_${data.id}`,
-            newName: `${data.name}_${data.id}`,
-            dataType: 'decimal(10,5)'
+            oldName: `${toSnakeCase(parameter[0].name)}_${parameter[0].analyzer_id}`,
+            newName: `${toSnakeCase(data.name)}_${parameter[0].analyzer_id}`,
+            dataType: "decimal(10,5)",
           });
         }
-        return await this.update(data);
+        await this.update(data);
       } catch (error) {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
+        throw error;
       }
+    });
+  
+    try {
+      return await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Error updating one or more parameters:", error);
     }
   }
+  
   
   
 }
