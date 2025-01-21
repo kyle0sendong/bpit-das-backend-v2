@@ -13,7 +13,7 @@ class AnalyzerDataModel extends ApiBaseModel{
 
     // take all analyzer parameters
     const parameters = await TcpParameterModel.getParametersByAnalyzerId(data.analyzer);
-    const parameterNames = parameters.map( (data) => `${toSnakeCase(data.name)}${data.analyzer}`);
+    const parameterNames = parameters.map( (data) => toSnakeCase(`${data.name}_${analyzer}`));
     return this.executeQuery(query, [parameterNames, data.to]);
   }
 

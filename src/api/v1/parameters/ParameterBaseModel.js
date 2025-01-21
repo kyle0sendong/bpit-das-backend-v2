@@ -7,7 +7,7 @@ class ParameterBaseModel extends ApiBaseModel {
     super(tableName)
   }
 
-  async insertParameter(dataArray) {
+  async insertParameter(dataArray, type) {
     const columns = Object.keys(dataArray[0]);
     const values = dataArray.map(item => columns.map(col => item[col]));
     const query = `
@@ -16,7 +16,7 @@ class ParameterBaseModel extends ApiBaseModel {
     `;
     const insertColumnPromises = dataArray.map( (data) =>
       AlterTableDataColumnModel.insertDataColumn({
-        columnName: toSnakeCase(`${data.name}_${data.analyzer_id}`),
+        columnName: toSnakeCase(`${data.name}_${type}${data.analyzer_id}`),
         dataType: 'decimal(10,5)'
       })
     )
@@ -28,7 +28,7 @@ class ParameterBaseModel extends ApiBaseModel {
     }
   }
 
-  async deleteParameter(id) {
+  async deleteParameter(id, type) {
     const parameter = await this.getById(id);
 
     const query = `
@@ -39,7 +39,7 @@ class ParameterBaseModel extends ApiBaseModel {
     try {
       await Promise.all([
         this.executeQuery(query, [id]),
-        AlterTableDataColumnModel.deleteDataColumn({columnName: toSnakeCase(`${parameter[0].name}_${parameter[0].analyzer_id}`)})
+        AlterTableDataColumnModel.deleteDataColumn({columnName: toSnakeCase(`${parameter[0].name}_${type}${parameter[0].analyzer_id}`)})
       ])
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
@@ -55,7 +55,7 @@ class ParameterBaseModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
-  async updateParameter(dataArray) {
+  async updateParameter(dataArray, type) {
 
     const updatePromises = dataArray.map(async (data) => {
       try {
@@ -64,7 +64,7 @@ class ParameterBaseModel extends ApiBaseModel {
         if (data.name) {
           await AlterTableDataColumnModel.renameDataColumns({
             oldName: `${toSnakeCase(parameter[0].name)}_${parameter[0].analyzer_id}`,
-            newName: `${toSnakeCase(data.name)}_${parameter[0].analyzer_id}`,
+            newName: `${toSnakeCase(data.name)}_${type}${parameter[0].analyzer_id}`,
             dataType: "decimal(10,5)",
           });
         }

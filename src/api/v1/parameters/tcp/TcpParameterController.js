@@ -38,17 +38,17 @@ class TcpParameterController {
       allParameters.push(parameterData);
     }
 
-    await TcpParameterModel.insertParameter(allParameters)
+    await TcpParameterModel.insertParameter(allParameters, 'tcp')
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.updateParameter(req.body)
+    await TcpParameterModel.updateParameter(req.body, 'tcp')
     return res.status(200).send(`Updated parameters`)
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.deleteParameter(req.query.id)
+    await TcpParameterModel.deleteParameter(req.query.id, 'tcp')
     return res.status(200).send(`Deleted '${req.query.name}' parameter`)
   })
 
