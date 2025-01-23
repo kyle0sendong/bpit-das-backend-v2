@@ -9,12 +9,13 @@ class AnalyzerDataModel extends ApiBaseModel{
   }
   
   async getAnalyzerData(data) {
-    const query = `SELECT ? FROM ${this.tableName}${data.timebase} WHERE datetime >= 2024-08-01 AND datetime <= ?`;
 
     // take all analyzer parameters
     const parameters = await TcpParameterModel.getParametersByAnalyzerId(data.analyzer);
-    const parameterNames = parameters.map( (data) => toSnakeCase(`${data.name}_${analyzer}`));
-    return this.executeQuery(query, [parameterNames, data.to]);
+    const parameterNames = ['datetime', ...parameters.map( (parameter) => toSnakeCase(`${parameter.name}_tcp${data.analyzer}`))];
+    const query = `SELECT ${parameterNames} FROM ${this.tableName}${data.timebase} WHERE DATE(datetime) BETWEEN ? AND ?`;
+
+    return this.executeQuery(query, [data.from, data.to]);
   }
 
 }

@@ -12,7 +12,7 @@ class AnalyzerDataController {
     const timebase = req.query.timebase;
     const analyzer = req.query.analyzer;
 
-    const result = AnalyzerDataModel.getAnalyzerData({from, to, analyzer, timebase})
+    const result = await AnalyzerDataModel.getAnalyzerData({from, to, analyzer, timebase})
     return res.status(200).json(result);
   })
 
