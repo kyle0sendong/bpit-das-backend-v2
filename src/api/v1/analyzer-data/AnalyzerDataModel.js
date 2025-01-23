@@ -12,8 +12,16 @@ class AnalyzerDataModel extends ApiBaseModel{
 
     // take all analyzer parameters
     const parameters = await TcpParameterModel.getParametersByAnalyzerId(data.analyzer);
-    const parameterNames = ['datetime', ...parameters.map( (parameter) => toSnakeCase(`${parameter.name}_${data.analyzerType}${data.analyzer}`))];
-    const query = `SELECT ${parameterNames} FROM ${this.tableName}${data.timebase} WHERE DATE(datetime) BETWEEN ? AND ?`;
+    const columns = [
+      "DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date, datetime", 
+      ...parameters.map( (parameter) => toSnakeCase(`${parameter.name}_${data.analyzerType}${data.analyzer}`))
+    ];
+    const query = `
+      SELECT ${columns} 
+      FROM ${this.tableName}${data.timebase} 
+      WHERE DATE(datetime) BETWEEN ? AND ?
+      ORDER BY datetime DESC
+    `;
 
     return this.executeQuery(query, [data.from, data.to]);
   }
