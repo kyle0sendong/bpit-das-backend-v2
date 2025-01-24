@@ -6,9 +6,9 @@ class AnalyzerDataController {
   
   getAnalyzerData = asyncHandler( async(req, res) => {
 
-    const [fromTemp, toTemp] = getDateTodayToTomorrow();
+    const [fromTemp, ] = getDateTodayToTomorrow();
     const from = req.query.from ?? fromTemp;
-    const to = req.query.to ?? toTemp;
+    const to = req.query.to ?? from;
     const timebase = req.query.timebase;
     const analyzer = req.query.analyzer;
     const analyzerType = req.query.analyzerType;
