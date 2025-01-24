@@ -15,13 +15,19 @@ class UserLogModel extends ApiBaseModel {
     return this.executeQuery(query);
   }
   
-  getLogByDateRange(data) {
+  getLogByDate(from, to) {
     const query = `
-      SELECT * 
+      SELECT 
+        DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date,
+        datetime,
+        username,
+        tags,
+        changes
       FROM ${this.tableName} 
-      WHERE date >= ? and date <= ?
+      WHERE DATE(datetime) BETWEEN ? AND ?
+      ORDER BY datetime DESC
     `;
-    return this.executeQuery(query, [data.startDate, data.endDate]);
+    return this.executeQuery(query, [from, to]);
   }
 
   getDistinctDate() {

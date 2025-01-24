@@ -15,10 +15,10 @@ class UserLogController {
   })
 
   getUserLogsByDate = asyncHandler( async(req, res) => {
-    const [from, to] = getDateTodayToTomorrow();
-    const dateFrom = req.query.from == undefined ? from : req.query.from;
-    const dateTo = req.query.to == undefined ?  from : req.query.to;
-    const logsByDate = await UserLogModel.getLogByDate([dateFrom, dateTo]);
+    const [today, tomorrow] = getDateTodayToTomorrow();
+    const from = req.query.from ?? today;
+    const to = req.query.to ?? tomorrow;
+    const logsByDate = await UserLogModel.getLogByDate(from, to);
     return res.status(200).json(logsByDate);
   })
 
