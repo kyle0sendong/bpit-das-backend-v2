@@ -44,5 +44,6 @@ router.delete('/virtual-channels', VirtualChannelController.deleteVirtualChannel
 router.get('/analyzer-data', AnalyzerDataController.getAnalyzerData);
 
 router.post('/register', UserController.registerUser);
+router.post('/login', UserController.loginUser);
 
 module.exports = router;

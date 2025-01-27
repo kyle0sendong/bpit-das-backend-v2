@@ -1,7 +1,7 @@
 const UserModel = require("./UserModel");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken")
 class UserController {
 
   registerUser = asyncHandler( async(req, res) => {
@@ -17,7 +17,35 @@ class UserController {
     res.sendStatus(200);
   })
 
-  
+  loginUser = asyncHandler( async(req, res) => {
+    const user = await UserModel.getUserByUsername(req.body.username);
+
+    // if wrong password or wrong username
+    if(!user) {
+      console.log("sad");
+      return res.sendStatus(401);
+    } 
+
+    const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+    if(!isPasswordValid) {
+      return res.sendStatus(401); 
+    }
+
+    const jwtToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET, { expiresIn: '30d'});
+    
+    return res.status(200).json({
+      message: "Login successful",
+      jwtToken,
+      user: {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  })
+
 }
 
 module.exports = new UserController;
