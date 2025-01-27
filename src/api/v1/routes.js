@@ -48,5 +48,6 @@ router.get('/analyzer-data', AnalyzerDataController.getAnalyzerData);
 router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginUser);
 router.post('/check-token', validateToken, UserController.checkToken);
+router.post('/logout', UserController.logoutUser);
 
 module.exports = router;

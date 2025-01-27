@@ -1,9 +1,12 @@
 const ApiBaseModel = require("@api/ApiBaseModel");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 class UserModel extends ApiBaseModel {
   constructor() {
     super("users");
-    this.rolesTable = "user_roles"
+    this.rolesTable = "user_roles";
+    this.blacklistedTokenTable = "blacklisted_tokens";
   }
 
   async getUserByUsername(username) {
@@ -25,12 +28,48 @@ class UserModel extends ApiBaseModel {
     return results.length > 0 ? results[0] : null;
   }
 
-  loginUser() {
+  async login(data) {
 
+    // Check if user exists
+    const user = await this.getUserByUsername(data.username);
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    // Generate JWT token
+    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+
+    // Return response
+    return {
+      message: "Login successful",
+      jwtToken,
+      user: {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 
-  logOut() {
-
+  async logOut(token) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const query = `
+      INSERT INTO ${this.blacklistedTokenTable} (token, expires_at) VALUES (?, ?)
+    `;
+    return await this.executeQuery(query, [token, new Date(decoded.exp * 1000)]);
   }
 
   updateUser() {
