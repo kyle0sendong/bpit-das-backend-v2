@@ -1,8 +1,15 @@
 const UserModel = require("./UserModel");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+
 class UserController {
+
+  checkToken = asyncHandler( async(req,res) => {
+    const secretKey = process.env.JWT_SECRET;
+    const decoded = jwt.verify(req.body.token, secretKey);
+    res.send(200).json(decoded);
+  })
 
   registerUser = asyncHandler( async(req, res) => {
     const password = await bcrypt.hash(req.body.password, 10);
@@ -46,6 +53,9 @@ class UserController {
     });
   })
 
+  logoutUser = asyncHandler( async(req, res) => {
+
+  })
 }
 
 module.exports = new UserController;

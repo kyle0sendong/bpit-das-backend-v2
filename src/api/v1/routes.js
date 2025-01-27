@@ -11,6 +11,8 @@ const CurrentValueController = require("./current-values/CurrentValueController"
 const AnalyzerDataController = require("./analyzer-data/AnalyzerDataController");
 const UserController = require("./users/UserController");
 
+const validateToken = require("@middleware/validateToken")
+
 router.get('/tcp-analyzers', TcpAnalyzerController.getTcpAnalyzer);
 router.post('/tcp-analyzers', TcpAnalyzerController.insertTcpAnalyzer);
 router.patch('/tcp-analyzers', TcpAnalyzerController.updateTcpAnalyzer);
@@ -45,5 +47,6 @@ router.get('/analyzer-data', AnalyzerDataController.getAnalyzerData);
 
 router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginUser);
+router.post('/check-token', validateToken, UserController.checkToken);
 
 module.exports = router;
