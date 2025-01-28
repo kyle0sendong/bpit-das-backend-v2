@@ -34,14 +34,13 @@ class UserModel extends ApiBaseModel {
     const user = await this.getUserByUsername(data.username);
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return { code: 401, json: {message: "Invalid username or password"}}
     }
 
     // Validate password
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
-
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return { code: 401, json: {message: "Invalid username or password"}}
     }
 
     // Generate JWT token
@@ -49,9 +48,7 @@ class UserModel extends ApiBaseModel {
       expiresIn: "30d",
     });
 
-
-    // Return response
-    return {
+    return { code: 200, json: {
       message: "Login successful",
       jwtToken,
       user: {
@@ -60,8 +57,8 @@ class UserModel extends ApiBaseModel {
         lastName: user.last_name,
         email: user.email,
         role: user.role,
-      },
-    };
+      }
+    }}
   }
 
   async register(data) {
@@ -87,7 +84,7 @@ class UserModel extends ApiBaseModel {
     await UserModel.insert(user);
     return { code: 201, json: {message: "User registered successfully"}};
   }
-  
+
   async logOut(token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const query = `

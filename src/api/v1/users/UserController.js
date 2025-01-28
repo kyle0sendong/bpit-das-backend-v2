@@ -18,37 +18,8 @@ class UserController {
   });
 
   loginUser = asyncHandler(async (req, res) => {
-    const { username, password } = req.body;
-  
-    // Check if user exists
-    const user = await UserModel.getUserByUsername(username);
-    if (!user) {
-      return res.status(401).json({ message: "Invalid username or password" });
-    }
-  
-    // Validate password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid username or password" });
-    }
-  
-    // Generate JWT token
-    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-  
-    // Return response
-    return res.status(200).json({
-      message: "Login successful",
-      jwtToken,
-      user: {
-        id: user.id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    const result = await UserModel.login(req.body);
+    return res.status(result.code).json(result.json);
   });
 
   logoutUser = asyncHandler( async(req, res) => {
