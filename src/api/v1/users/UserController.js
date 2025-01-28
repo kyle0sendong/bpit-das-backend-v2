@@ -12,30 +12,9 @@ class UserController {
   })
 
   registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password, firstName, lastName } = req.body;
-  
-    // Check if user already exists
-    const existingUser = await UserModel.getUserByUsername(username);
-    if (existingUser) {
-      return res.status(400).json({ message: "Username already exists" });
-    }
-  
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-  
-    // Create user object
-    const user = {
-      username,
-      email,
-      password: hashedPassword,
-      first_name: firstName,
-      last_name: lastName,
-    };
-  
-    // Insert user into the database
-    await UserModel.insert(user);
-  
-    res.status(201).json({ message: "User registered successfully" });
+    const result = await UserModel.register(req.body);
+
+    return res.status(result.code).json(result.json);
   });
 
   loginUser = asyncHandler(async (req, res) => {

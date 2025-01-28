@@ -64,6 +64,30 @@ class UserModel extends ApiBaseModel {
     };
   }
 
+  async register(data) {
+    // Check if user already exists
+    const existingUser = await this.getUserByUsername(data.username);
+    if (existingUser) {
+      return { code: 400, json: {message: "Username already exists"}}
+    }
+  
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+  
+    // Create user object
+    const user = {
+      username: data.username,
+      email: data.email,
+      password: hashedPassword,
+      first_name: data.firstName,
+      last_name: data.lastName,
+    };
+  
+    // Insert user into the database
+    await UserModel.insert(user);
+    return { code: 201, json: {message: "User registered successfully"}};
+  }
+  
   async logOut(token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const query = `
