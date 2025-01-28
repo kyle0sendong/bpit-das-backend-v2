@@ -1,6 +1,5 @@
 const UserModel = require("./UserModel");
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 class UserController {
@@ -13,7 +12,6 @@ class UserController {
 
   registerUser = asyncHandler(async (req, res) => {
     const result = await UserModel.register(req.body);
-
     return res.status(result.code).json(result.json);
   });
 
