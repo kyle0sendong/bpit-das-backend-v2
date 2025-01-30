@@ -44,13 +44,13 @@ class UserModel extends ApiBaseModel {
     }
 
     // Generate JWT token
-    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
 
     return { code: 200, json: {
       message: "Login successful",
-      jwtToken,
+      token,
       user: {
         id: user.id,
         firstName: user.first_name,
