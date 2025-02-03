@@ -34,6 +34,11 @@ class UserController {
     }
   })
 
+  getAllUsers = asyncHandler( async(req, res) => {
+    const data = await UserModel.getAll();
+    return res.status(200).json(data);
+  })
+  
   updateUser = asyncHandler( async(req, res) => {
     await UserModel.update(req.body);
     return res.status(200).send(`Updated user`);
