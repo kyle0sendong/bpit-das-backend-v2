@@ -33,6 +33,16 @@ class UserController {
         return res.status(400).json({ message: 'Invalid token.' });
     }
   })
+
+  updateUser = asyncHandler( async(req, res) => {
+    await UserModel.update(req.body);
+    return res.status(200).send(`Updated user`);
+  })
+
+  deleteUser = asyncHandler( async(req, res) => {
+    await UserModel.delete(req.body.id);
+    return res.status(200).send(`Deleted user`);
+  })
 }
 
 module.exports = new UserController;

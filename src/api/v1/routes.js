@@ -50,4 +50,7 @@ router.post('/login', UserController.loginUser);
 router.post('/check-token', validateToken, UserController.checkToken);
 router.post('/logout', UserController.logoutUser);
 
+router.patch('/user', UserController.updateUser);
+router.delete('/user', UserController.deleteUser);
+
 module.exports = router;

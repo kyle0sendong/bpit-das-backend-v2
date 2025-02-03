@@ -93,11 +93,6 @@ class UserModel extends ApiBaseModel {
     return await this.executeQuery(query, [token, new Date(decoded.exp * 1000)]);
   }
 
-  updateUser() {
-
-  }
-
-
 }
 
 module.exports = new UserModel();
