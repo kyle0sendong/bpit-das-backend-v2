@@ -35,7 +35,7 @@ class UserController {
   })
 
   getAllUsers = asyncHandler( async(req, res) => {
-    const data = await UserModel.getAll();
+    const data = await UserModel.getAllUsers();
     return res.status(200).json(data);
   })
   
