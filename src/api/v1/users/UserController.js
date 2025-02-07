@@ -1,14 +1,7 @@
 const UserModel = require("./UserModel");
 const asyncHandler = require("express-async-handler");
-const jwt = require("jsonwebtoken");
 
 class UserController {
-
-  checkToken = asyncHandler( async(req,res) => {
-    const secretKey = process.env.JWT_SECRET;
-    const decoded = jwt.verify(req.body.token, secretKey);
-    res.send(200).json(decoded);
-  })
 
   registerUser = asyncHandler(async (req, res) => {
     const result = await UserModel.register(req.body);
@@ -22,9 +15,7 @@ class UserController {
 
   logoutUser = asyncHandler( async(req, res) => {
     const token = req.headers.authorization;
-
     if (!token) return res.status(401).json({ message: 'No token provided.' });
-
     try {
         await UserModel.logOut(token);
         return res.status(200).json({ message: 'Logged out successfully.' });
