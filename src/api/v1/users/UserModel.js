@@ -62,8 +62,15 @@ class UserModel extends ApiBaseModel {
       return { code: 401, json: {message: "Invalid username or password"}}
     }
 
+    const userData = {
+      name: `${user.first_name ?? ""} ${user.last_name ?? ""}`,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    }
+
     // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign(userData, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
 
