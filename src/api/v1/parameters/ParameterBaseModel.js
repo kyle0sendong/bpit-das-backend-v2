@@ -60,7 +60,6 @@ class ParameterBaseModel extends ApiBaseModel {
     const updatePromises = dataArray.map(async (data) => {
       try {
         const parameter = await this.getById(data.id);
-        console.log(parameter[0].name, data.name)
         if (data.name) {
           await AlterTableDataColumnModel.renameDataColumns({
             oldName: `${toSnakeCase(parameter[0].name)}_${parameter[0].analyzer_id}`,
