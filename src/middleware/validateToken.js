@@ -1,17 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const validateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = req.headers.authorization;
 
   if(!token) {
-    return res.status(403);
+    return res.status(401).json({error:"Token not provided."});
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-    console.log(decoded)
     next();
   } catch(error) {
     if (error.name === 'TokenExpiredError') {
