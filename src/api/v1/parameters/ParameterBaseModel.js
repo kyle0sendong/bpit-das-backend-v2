@@ -6,10 +6,12 @@ const UserLogModel = require("@apiV1/user-logs/UserLogModel");
 
 class ParameterBaseModel extends ApiBaseModel {
 
+
   constructor(tableName) {
     super(tableName)
     this.tcpAnalyzerTable = TcpAnalyzerModel.getTableName();
   }
+
 
   getParameterDetailsById(id) {
     const query = `
@@ -32,6 +34,7 @@ class ParameterBaseModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
+
   getParametersByAnalyzerId(id) {
     const query = `
       SELECT * FROM ${this.tableName} 
@@ -40,78 +43,79 @@ class ParameterBaseModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
+
   async insertParameter(dataArray, type, user, numberOfParameter, analyzerId = 0) {
-
-    const columns = Object.keys(dataArray[0]);
-    const values = dataArray.map(item => columns.map(col => item[col]));
-    const analyzerDetails = await TcpAnalyzerModel.getById(analyzerId);
-
-    // process log data
-    const logData = {
-      username: user.username,
-      full_name: user.name,
-      tags: "Parameter, Insert",
-      changes: `Inserted ${numberOfParameter} parameter to '${type == "vc" ? 'Virtual Channels' : analyzerDetails[0].name}'`
-    };
-    
-    const query = `
-      INSERT INTO ${this.tableName} (${columns.join(", ")})
-      VALUES ?
-    `;
-
-    // for batch insert, use promise all
-    const insertColumnPromises = dataArray.map( (data) => {
-      const columnName = 
-        type == "vc" ? 
-          toSnakeCase(`${type}_${data.name}`) :
-          toSnakeCase(`${type}${data.analyzer_id}_${data.name}`);
-
-      return AlterTableDataColumnModel.insertDataColumn({
-        columnName: columnName,
-        dataType: 'decimal(10,5)'
-      })
-    })
-
     try {
+      const columns = Object.keys(dataArray[0]);
+      const values = dataArray.map(item => columns.map(col => item[col]));
+      const analyzerDetails = await TcpAnalyzerModel.getById(analyzerId);
+
+      const logData = {
+        username: user.username,
+        full_name: user.name,
+        tags: "Parameter, Insert",
+        changes: `Inserted ${numberOfParameter} parameter to '${type == "vc" ? 'Virtual Channels' : analyzerDetails[0].name}'`
+      };
+
+      const query = `
+        INSERT INTO ${this.tableName} (${columns.join(", ")})
+        VALUES ?
+      `;
+
+      const insertColumnPromises = dataArray.map((data) => {
+        const columnName = 
+          type == "vc" ? 
+            toSnakeCase(`${type}_${data.name}`) :
+            toSnakeCase(`${type}${data.analyzer_id}_${data.name}`);
+        return AlterTableDataColumnModel.insertDataColumn({
+          columnName: columnName,
+          dataType: 'decimal(10,5)'
+        })
+      });
+
       await Promise.all([this.executeQuery(query, [values]), ...insertColumnPromises]);
       return UserLogModel.insert(logData);
+
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
     }
   }
 
+
   async deleteParameter(id, type, user) {
 
-    const parameterDetails = await this.getParameterDetailsById(id);
-    const analyzerDetails = await TcpAnalyzerModel.getById(parameterDetails[0].analyzer_id ?? 0);
-
-    const logData = {
-      username: user.username,
-      full_name: user.name,
-      tags: "Parameter, Delete",
-      changes: `Deleted parameter '${parameterDetails[0].name}' from '${analyzerDetails[0].name}'`
-    };
-
-    const query = `
-      DELETE FROM ${this.tableName}
-      WHERE id = ?
-    `;
-
     try {
-      // delete columns from data tables
+      const parameterDetails = await this.getParameterDetailsById(id);
+      const analyzerDetails = await TcpAnalyzerModel.getById(parameterDetails[0].analyzer_id ?? 0);
+
+      const logData = {
+        username: user.username,
+        full_name: user.name,
+        tags: "Parameter, Delete",
+        changes: `Deleted parameter '${parameterDetails[0].name}' from '${analyzerDetails[0].name}'`
+      };
+  
+      const query = `
+        DELETE FROM ${this.tableName}
+        WHERE id = ?
+      `;
+
       const columnName = toSnakeCase(`${type}${parameterDetails[0].analyzer_id}_${parameterDetails[0].name}`);
       await Promise.all([
         this.executeQuery(query, [id]),
         AlterTableDataColumnModel.deleteDataColumn({columnName})
-      ])
+      ]);
       return UserLogModel.insert(logData);
+
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
     }
   }
 
+
   async updateParameter(dataArray, type, user) {
 
+    // Create array of promises
     const updatePromises = dataArray.map(async (data) => {
       try {
         const parameter = await this.getById(data.id);
@@ -124,11 +128,11 @@ class ParameterBaseModel extends ApiBaseModel {
           tags = "Virtual Channel, Update";
         } else if(type =="tcp") {
           const analyzerDetails = await TcpAnalyzerModel.getById(parameter[0].analyzer_id ?? 0);
-          tags = "Virtual Channel, Update";
+          tags = "Modbus TCP, Update";
           changes += `'${analyzerDetails[0].name}' `
         }
-        const columns = Object.keys(data);
-        for( let column of columns ) {
+
+        for(let column of Object.keys(data)) {
           if(column == "id") continue;
           changes += `(${column}: '${parameter[0][column]}' to '${data[column]}') `
         }
@@ -141,7 +145,7 @@ class ParameterBaseModel extends ApiBaseModel {
           changes: changes.trimEnd()
         };
 
-        // Update table and data table columns
+        // When 'name' is changed, update table and data table columns
         if (data.name) {
           let oldName = `${type}_${toSnakeCase(parameter[0].name)}`;
           let newName = `${type}_${toSnakeCase(data.name)}`;
@@ -149,14 +153,16 @@ class ParameterBaseModel extends ApiBaseModel {
             oldName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(parameter[0].name)}`;
             newName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(data.name)}`;
           }
-          
           await AlterTableDataColumnModel.renameDataColumns({
             oldName: oldName,
             newName: newName,
             dataType: "decimal(10,5)",
           });
         }
-        return await this.update(data);
+
+        await this.update(data);
+        return UserLogModel.insert(logData);
+
       } catch (error) {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
         throw error;
