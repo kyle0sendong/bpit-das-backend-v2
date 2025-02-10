@@ -63,8 +63,8 @@ class ParameterBaseModel extends ApiBaseModel {
     const insertColumnPromises = dataArray.map( (data) => {
       const columnName = 
         type == "vc" ? 
-          toSnakeCase(`${data.name}`) :
-          toSnakeCase(`${data.name}_${type}${data.analyzer_id}`);
+          toSnakeCase(`${type}_${data.name}`) :
+          toSnakeCase(`${type}${data.analyzer_id}_${data.name}`);
 
       return AlterTableDataColumnModel.insertDataColumn({
         columnName: columnName,
@@ -99,7 +99,7 @@ class ParameterBaseModel extends ApiBaseModel {
 
     try {
       // delete columns from data tables
-      const columnName = toSnakeCase(`${parameterDetails[0].name}_${type}${parameterDetails[0].analyzer_id}`);
+      const columnName = toSnakeCase(`${type}${parameterDetails[0].analyzer_id}_${parameterDetails[0].name}`);
       await Promise.all([
         this.executeQuery(query, [id]),
         AlterTableDataColumnModel.deleteDataColumn({columnName})
@@ -116,13 +116,21 @@ class ParameterBaseModel extends ApiBaseModel {
       try {
         const parameter = await this.getById(data.id);
         if (data.name) {
+          let oldName = `${type}_${toSnakeCase(parameter[0].name)}`;
+          let newName = `${type}_${toSnakeCase(data.name)}`;
+
+          if(type != "vc") {
+            oldName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(parameter[0].name)}`;
+            newName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(data.name)}`;
+          }
+          
           await AlterTableDataColumnModel.renameDataColumns({
-            oldName: `${toSnakeCase(parameter[0].name)}_${parameter[0].analyzer_id}`,
-            newName: `${toSnakeCase(data.name)}_${type}${parameter[0].analyzer_id}`,
+            oldName: oldName,
+            newName: newName,
             dataType: "decimal(10,5)",
           });
         }
-        await this.update(data);
+        return await this.update(data);
       } catch (error) {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
         throw error;
