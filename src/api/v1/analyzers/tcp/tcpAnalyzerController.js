@@ -15,7 +15,7 @@ class TcpAnalyzerController {
   })
 
   insertTcpAnalyzer = asyncHandler(async(req, res) => {
-    await TcpAnalyzerModel.insert(req.body);
+    await TcpAnalyzerModel.insertAnalyzer(req.body, "TCP", req.user);
     return res.status(200).send(`Inserted ${req.body.name} Modbus TCP`);
   })
     
