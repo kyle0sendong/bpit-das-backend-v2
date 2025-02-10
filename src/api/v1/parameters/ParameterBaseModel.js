@@ -110,15 +110,41 @@ class ParameterBaseModel extends ApiBaseModel {
     }
   }
 
-  async updateParameter(dataArray, type) {
+  async updateParameter(dataArray, type, user) {
 
     const updatePromises = dataArray.map(async (data) => {
       try {
         const parameter = await this.getById(data.id);
+        
+        // Process Log changes and tags
+        let changes = `Updated '${parameter[0].name}' from `;
+        let tags = "";
+        if(type == "vc") {
+          changes += `'Virtual Channels'`;
+          tags = "Virtual Channel, Update";
+        } else if(type =="tcp") {
+          const analyzerDetails = await TcpAnalyzerModel.getById(parameter[0].analyzer_id ?? 0);
+          tags = "Virtual Channel, Update";
+          changes += `'${analyzerDetails[0].name}' `
+        }
+        const columns = Object.keys(data);
+        for( let column of columns ) {
+          if(column == "id") continue;
+          changes += `(${column}: '${parameter[0][column]}' to '${data[column]}') `
+        }
+
+        // Process log data
+        const logData = {
+          username: user.username,
+          full_name: user.name,
+          tags: tags,
+          changes: changes.trimEnd()
+        };
+
+        // Update table and data table columns
         if (data.name) {
           let oldName = `${type}_${toSnakeCase(parameter[0].name)}`;
           let newName = `${type}_${toSnakeCase(data.name)}`;
-
           if(type != "vc") {
             oldName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(parameter[0].name)}`;
             newName = `${type}${parameter[0].analyzer_id}_${toSnakeCase(data.name)}`;

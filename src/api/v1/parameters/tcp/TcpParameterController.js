@@ -5,14 +5,15 @@ const { createRandomNumber } = require("@utils/rng");
 class TcpParameterController {
 
   getParameters = asyncHandler( async(req, res) => {
+
     const analyzerId = req.query.id ?? 0;
-    if(analyzerId > 0) {
+    if(analyzerId > 0) {  // if supplied analyzer
       const result = await TcpParameterModel.getParametersByAnalyzerId(analyzerId);
       return res.status(200).json(result);
-    } else {
-      const result = await TcpParameterModel.getAll();
-      return res.status(200).json(result);
     }
+
+    const result = await TcpParameterModel.getAll();
+    return res.status(200).json(result);
   })
 
   insertParameter = asyncHandler(async(req, res) => {
@@ -28,9 +29,9 @@ class TcpParameterController {
         unit: "N/A",
         enable: 1,
         request_interval: 5,
-        format: "N/A",
-        function_code: "N/A",
-        start_register_address: 1,
+        format: "32-bit Signed Big-Endian",
+        function_code: "0x03 Read Holding Register",
+        start_register_address: 0,
         register_count: 1,
         formula: "x * 1",
         analyzer_id: tcpId
@@ -43,7 +44,7 @@ class TcpParameterController {
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.updateParameter(req.body, 'tcp')
+    await TcpParameterModel.updateParameter(req.body, 'tcp', req.user)
     return res.status(200).send(`Updated parameters`)
   })
 
