@@ -7,10 +7,9 @@ class AnalyzerBaseModel extends ApiBaseModel {
     super(tableName);
   }
 
-  // Insert Analyzer
+
   async insertAnalyzer(data, type, user) {
     try {
-      // Create Log Data
       const logData = {
         username: user.username,
         full_name: user.name,
@@ -26,27 +25,47 @@ class AnalyzerBaseModel extends ApiBaseModel {
     }
   }
 
+
   async updateAnalyzer(data, type, user) {
-
-
-
-  }
-
-  // Delete Analyzer
-  async deleteAnalyzer(id, type, user) {
     try {
       // get analyzer's data for proper logging
-      const analyzerData = await this.getById(id);
+      const analyzerDetails = await this.getById(data.id);
+
+      // Process log changes
+      let changes = `Updated ${type} Analyzer '${analyzerDetails[0].name}' `;
+      for(let column of Object.keys(data)) {
+        if(column == "id") continue;
+        changes += `(${column}: '${analyzerDetails[0][column]}' to '${data[column]} ') `
+      }
 
       // Create Log Data
       const logData = {
         username: user.username,
         full_name: user.name,
-        tags: "Analyzer, Delete",
-        changes: `Deleted ${type} Analyzer: '${analyzerData[0].name}'`
+        tags: "Analyzer, Update",
+        changes: changes.trimEnd()
       };
-      
-      // Delete analyzer and insert log data
+
+      await this.update(data);
+      return UserLogModel.insert(logData);
+    } catch(error) {
+      console.error("Error occurred: ", error);
+    }
+  }
+
+  
+  async deleteAnalyzer(id, type, user) {
+    try {
+      // get analyzer's data for proper logging
+      const analyzerDetails = await this.getById(id);
+
+      const logData = {
+        username: user.username,
+        full_name: user.name,
+        tags: "Analyzer, Delete",
+        changes: `Deleted ${type} Analyzer: '${analyzerDetails[0].name}'`
+      };
+
       await this.delete(id);
       return await UserLogModel.insert(logData);
     } catch(error) {

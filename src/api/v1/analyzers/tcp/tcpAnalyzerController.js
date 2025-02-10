@@ -3,6 +3,7 @@ const TcpAnalyzerModel = require("./TcpAnalyzerModel");
 
 class TcpAnalyzerController {
   
+  
   getTcpAnalyzer = asyncHandler( async(req, res) => {
     const id = req.query.id ?? 0;
     if(id > 0) {
@@ -14,16 +15,19 @@ class TcpAnalyzerController {
     }
   })
 
+
   insertTcpAnalyzer = asyncHandler(async(req, res) => {
     await TcpAnalyzerModel.insertAnalyzer(req.body, "TCP", req.user);
     return res.status(200).send(`Inserted ${req.body.name} Modbus TCP`);
   })
     
+
   updateTcpAnalyzer = asyncHandler(async(req, res) => {
-    await TcpAnalyzerModel.update(req.body)
-    return res.status(200).send(`Update Success`)
+    await TcpAnalyzerModel.updateAnalyzer(req.body, "TCP", req.user);
+    return res.status(200).send(`Update Success`);
   })
   
+
   deleteTcpAnalyzer = asyncHandler( async(req, res) => {
     await TcpAnalyzerModel.deleteAnalyzer(req.query.id, "TCP", req.user);
     return res.status(200).send(`Deleted ${req.body.name} TCP Analyzer`);
