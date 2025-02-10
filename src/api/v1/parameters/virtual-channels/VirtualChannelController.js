@@ -17,7 +17,7 @@ class VirtualChannelController {
     for(let i = 0; i < numberOfParameter; i++) {
       const randomNumber = createRandomNumber();
       const parameterData = {
-        name: `vc_${randomNumber}`,
+        name: `Default${randomNumber}`,
         unit: " ",
         formula: "x * y"
       }
@@ -29,7 +29,7 @@ class VirtualChannelController {
   })
   
   updateVirtualChannel = asyncHandler( async(req, res) => {
-    await VirtualChannelModel.updateVirtualChannel(req.body);
+    await VirtualChannelModel.updateParameter(req.body, "vc");
     return res.status(200).send(`Update Virtual Channel`);
   })
   
