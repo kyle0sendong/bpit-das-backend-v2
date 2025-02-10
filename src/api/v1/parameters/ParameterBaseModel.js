@@ -51,7 +51,7 @@ class ParameterBaseModel extends ApiBaseModel {
       username: user.username,
       full_name: user.name,
       tags: "Parameter, Insert",
-      changes: `Inserted ${numberOfParameter} parameter to '${analyzerId > 0 ? analyzerDetails[0].name : 'Virtual Channels'}'`
+      changes: `Inserted ${numberOfParameter} parameter to '${type == "vc" ? 'Virtual Channels' : analyzerDetails[0].name}'`
     };
     
     const query = `
@@ -60,26 +60,31 @@ class ParameterBaseModel extends ApiBaseModel {
     `;
 
     // for batch insert, use promise all
-    const insertColumnPromises = dataArray.map( (data) =>
-      AlterTableDataColumnModel.insertDataColumn({
-        columnName: toSnakeCase(`${data.name}_${type}${data.analyzer_id}`),
+    const insertColumnPromises = dataArray.map( (data) => {
+      const columnName = 
+        type == "vc" ? 
+          toSnakeCase(`${data.name}`) :
+          toSnakeCase(`${data.name}_${type}${data.analyzer_id}`);
+
+      return AlterTableDataColumnModel.insertDataColumn({
+        columnName: columnName,
         dataType: 'decimal(10,5)'
       })
-    )
+    })
 
     try {
-      await Promise.all([this.executeQuery(query, [values]), ...insertColumnPromises])
-
+      await Promise.all([this.executeQuery(query, [values]), ...insertColumnPromises]);
       return UserLogModel.insert(logData);
-
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
     }
   }
 
   async deleteParameter(id, type, user) {
+
     const parameterDetails = await this.getParameterDetailsById(id);
-    const analyzerDetails = await TcpAnalyzerModel.getById(parameterDetails[0].analyzer_id);
+    const analyzerDetails = await TcpAnalyzerModel.getById(parameterDetails[0].analyzer_id ?? 0);
+
     const logData = {
       username: user.username,
       full_name: user.name,
@@ -94,18 +99,17 @@ class ParameterBaseModel extends ApiBaseModel {
 
     try {
       // delete columns from data tables
+      const columnName = toSnakeCase(`${parameterDetails[0].name}_${type}${parameterDetails[0].analyzer_id}`);
       await Promise.all([
         this.executeQuery(query, [id]),
-        AlterTableDataColumnModel.deleteDataColumn({columnName: toSnakeCase(`${parameterDetails[0].name}_${type}${parameterDetails[0].analyzer_id}`)})
+        AlterTableDataColumnModel.deleteDataColumn({columnName})
       ])
-
       return UserLogModel.insert(logData);
     } catch(error) {
       console.error(`Error inserting parameter: `, error);
     }
   }
 
-  
   async updateParameter(dataArray, type) {
 
     const updatePromises = dataArray.map(async (data) => {
@@ -131,11 +135,6 @@ class ParameterBaseModel extends ApiBaseModel {
       console.error("Error updating one or more parameters:", error);
     }
   }
-
-
-
-  
-  
   
 }
 
