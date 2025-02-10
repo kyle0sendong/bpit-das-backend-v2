@@ -19,13 +19,12 @@ class TcpParameterController {
 
     const numberOfParameter = req.body.number ?? 1;
     const tcpId = req.body.id ?? 0;
-    const name = req.body.name ?? "Default";
     const allParameters = [];
 
     for(let i = 0; i < numberOfParameter; i++) {
       const randomNumber = createRandomNumber();
       const parameterData = {
-        name: `${name}_${randomNumber}`,
+        name: `Default${randomNumber}`,
         unit: "N/A",
         enable: 1,
         request_interval: 5,
