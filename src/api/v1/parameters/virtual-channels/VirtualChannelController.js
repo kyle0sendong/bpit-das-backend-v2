@@ -17,14 +17,14 @@ class VirtualChannelController {
     for(let i = 0; i < numberOfParameter; i++) {
       const randomNumber = createRandomNumber();
       const parameterData = {
-        name: `VC_${randomNumber}`,
+        name: `vc_${randomNumber}`,
         unit: " ",
         formula: "x * y"
       }
       allParameters.push(parameterData);
     }
 
-    await VirtualChannelModel.insertParameter(allParameters);
+    await VirtualChannelModel.insertParameter(allParameters, "vc", req.user, numberOfParameter);
     return res.status(200).send(`Inserted Virtual Channel`);
   })
   
@@ -34,7 +34,7 @@ class VirtualChannelController {
   })
   
   deleteVirtualChannel = asyncHandler( async(req, res) => {
-    await VirtualChannelModel.delete(req.query.id);
+    await VirtualChannelModel.deleteVirtualChannel(req.query.id, req.user);
     return res.status(200).send(`Deleted Virtual Channel`);
   })
 }
