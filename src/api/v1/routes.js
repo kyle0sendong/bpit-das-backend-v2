@@ -61,5 +61,6 @@ router.get('/users', UserController.getAllUsers);
 router.post('/register', UserController.registerUser);
 router.patch('/user', UserController.updateUser);
 router.delete('/user', UserController.deleteUser);
+router.get('/user-roles', UserController.getUserRoles);
 
 module.exports = router;

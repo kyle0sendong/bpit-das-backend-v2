@@ -3,6 +3,11 @@ const asyncHandler = require("express-async-handler");
 
 class UserController {
 
+  getUserRoles = asyncHandler(async (req, res) => {
+    const data = await UserModel.getUserRoles();
+    return res.status(200).json(data);
+  })
+  
   registerUser = asyncHandler(async (req, res) => {
     const result = await UserModel.register(req.body);
     return res.status(result.code).json(result.json);

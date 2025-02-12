@@ -9,6 +9,14 @@ class UserModel extends ApiBaseModel {
     this.blacklistedTokenTable = "blacklisted_tokens";
   }
 
+  async getUserRoles() {
+    const query = `
+      SELECT *
+      FROM ${this.rolesTable}
+    `;
+    return this.executeQuery(query);
+  }
+  
   async getAllUsers() {
     const query = `
       SELECT
@@ -139,7 +147,7 @@ class UserModel extends ApiBaseModel {
       user
     }};
   }
-  
+
   async register(data) {
     // Check if user already exists
     const existingUser = await this.getUserByUsername(data.username);
