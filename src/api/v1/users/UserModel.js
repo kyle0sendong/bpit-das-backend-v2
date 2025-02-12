@@ -47,6 +47,26 @@ class UserModel extends ApiBaseModel {
     return results.length > 0 ? results[0] : null;
   }
 
+  async getUserById(id) {
+
+    const query = `
+      SELECT
+        ${this.tableName}.id,
+        ${this.tableName}.username,
+        ${this.tableName}.email,
+        ${this.tableName}.password,
+        ${this.tableName}.first_name,
+        ${this.tableName}.last_name,
+        ${this.rolesTable}.role
+      FROM ${this.tableName}
+      INNER JOIN ${this.rolesTable} ON ${this.tableName}.role_id = ${this.rolesTable}.id
+      WHERE ${this.tableName}.id = ?
+    `;
+    const results = await this.executeQuery(query, [id]);
+    return results.length > 0 ? results[0] : null;
+  }
+
+
   async login(data) {
 
     // Check if user exists
@@ -81,12 +101,45 @@ class UserModel extends ApiBaseModel {
         id: user.id,
         firstName: user.first_name,
         lastName: user.last_name,
+        username: user.username,
         email: user.email,
         role: user.role,
       }
     }}
   }
 
+  async updateUser(newData) {
+
+    await this.update(newData);
+    //create user data
+    const updateData = await this.getUserById(newData.id);
+
+    for(let column of Object.keys(newData)) {
+      if(column == "id") continue;
+      updateData[column] = newData[column]
+    }
+
+    // Generate JWT token
+    const user = {
+      id: updateData.id,
+      firstName: updateData.first_name,
+      lastName: updateData.last_name,
+      username: updateData.username,
+      email: updateData.email,
+      role: updateData.role,
+    }
+
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    return { code: 200, json: {
+      message: "Login successful",
+      token,
+      user
+    }};
+  }
+  
   async register(data) {
     // Check if user already exists
     const existingUser = await this.getUserByUsername(data.username);

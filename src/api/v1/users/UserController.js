@@ -31,8 +31,8 @@ class UserController {
   })
   
   updateUser = asyncHandler( async(req, res) => {
-    await UserModel.update(req.body);
-    return res.status(200).send(`Updated user`);
+    const result = await UserModel.updateUser(req.body);
+    return res.status(result.code).json(result.json);
   })
 
   deleteUser = asyncHandler( async(req, res) => {
