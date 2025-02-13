@@ -24,9 +24,10 @@ class UserModel extends ApiBaseModel {
         ${this.tableName}.id,
         ${this.tableName}.username,
         ${this.tableName}.email,
-        ${this.tableName}.first_name,
-        ${this.tableName}.last_name,
-        ${this.rolesTable}.role
+        ${this.tableName}.first_name AS firstName,
+        ${this.tableName}.last_name AS lastName,
+        ${this.rolesTable}.role,
+        ${this.rolesTable}.id AS roleId
       FROM ${this.tableName}
       INNER JOIN ${this.rolesTable} ON ${this.tableName}.role_id = ${this.rolesTable}.id
     `;
@@ -41,6 +42,7 @@ class UserModel extends ApiBaseModel {
         ${this.tableName}.id,
         ${this.tableName}.username,
         ${this.tableName}.email,
+        ${this.tableName}.password,
         ${this.tableName}.first_name,
         ${this.tableName}.last_name,
         ${this.rolesTable}.role
@@ -60,6 +62,7 @@ class UserModel extends ApiBaseModel {
         ${this.tableName}.id,
         ${this.tableName}.username,
         ${this.tableName}.email,
+        ${this.tableName}.password,
         ${this.tableName}.first_name,
         ${this.tableName}.last_name,
         ${this.rolesTable}.role
