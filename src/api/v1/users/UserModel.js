@@ -165,11 +165,16 @@ class UserModel extends ApiBaseModel {
       password: hashedPassword,
       first_name: data.firstName,
       last_name: data.lastName,
+      role_id: data.roleId
     };
-  
+
     // Insert user into the database
-    await UserModel.insert(user);
-    return { code: 201, json: {message: "User registered successfully"}};
+    try {
+      await this.insert(user);
+      return { code: 201, json: {message: "User registered successfully"}};
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async logOut(token) {
