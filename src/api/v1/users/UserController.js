@@ -40,6 +40,15 @@ class UserController {
     return res.status(result.code).json(result.json);
   })
 
+  updateOtherUser = asyncHandler( async(req, res) => {
+    try {
+      await UserModel.update(req.body);
+      return res.status(200).send("Updated user successfully");
+    } catch(error) {
+      console.log(error);
+    }
+  })
+
   deleteUser = asyncHandler( async(req, res) => {
     await UserModel.delete(req.body.id);
     return res.status(200).send(`Deleted user`);

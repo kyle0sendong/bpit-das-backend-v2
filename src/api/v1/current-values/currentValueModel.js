@@ -1,26 +1,88 @@
-const db = require("@database");
 const ApiBaseModel = require("@api/ApiBaseModel");
+const TimebaseModel = require("@api/v1/timebases/TimebaseModel");
 
 class CurrentValuesModel extends ApiBaseModel {
 
   constructor() {
-   super('current_values');
+    super('current_values');
+    this.tcpParameterTableName = 'tcp_parameters';
+    this.serialParameterTableName = 'serial_parameters';
+    this.virtualChannelTableNmae = 'virtual_channels';
+    this.timebaseTableName = 'timebases';
   }
 
-  getCurrentValuesByAnalyzerId = (id) => {
-    const query = "SELECT * FROM ?? WHERE tcp_id = ?"
-    return new Promise( (resolve,result) => {
+  checkCurrentValueExist = async (parameterId, analyzerType, analyzerId, timebaseId) => {
+    const query = `
+      SELECT * 
+      FROM ${this.tableName} 
+      WHERE 
+        parameter_id = ? 
+        AND ${analyzerType}_id = ?
+        AND timebase_id = ?
+    `
 
-      db.query(
-        query,
-        [this.table, id],
-        (error, result) => {
-          if(error) throw error
-          resolve(result)
-        }
-      )
-    })
+    const result = await this.executeQuery(query, [parameterId, analyzerId, timebaseId]);
+    
+    if(result[0]) return true;
+    else return false;
   }
+
+  getCurrentValuesByAnalyzerId = async (id, type) => {
+
+    const parameterTableName = type === 'tcp' ? this.tcpParameterTableName : type === 'serial' ? this.serialParameterTableName : 'virtual_channels';
+
+    const query = `
+      SELECT
+        ${this.tableName}.id,
+        ${this.tableName}.current_value AS currentValue,
+        ${this.tableName}.datetime,
+        ${this.timebaseTableName}.timebase,
+        ${parameterTableName}.name AS parameterName,
+        ${parameterTableName}.request_interval AS requestInterval
+      FROM ${this.tableName}
+      INNER JOIN ${parameterTableName} on ${this.tableName}.${type}_id = ${parameterTableName}.analyzer_id
+      INNER JOIN ${this.timebaseTableName} ON ${this.tableName}.timebase_id = ${this.timebaseTableName}.id
+      WHERE ${type}_id = ?
+    `;
+
+    return await this.executeQuery(query, [id]);
+  }
+
+  updateCurrentValue = (data, type) => {
+    const query = `
+      UPDATE  ${this.tableName}
+      SET ?
+      WHERE 
+        ${type}_id = ${data.analyzerId} AND 
+        parameter_id = ${data.parameterId} AND 
+        timebase_id = ${data.timebaseId}
+    `;
+    return this.executeQuery(query, [data.data]);
+  }
+
+  getCurrentValue = async (data, type) => {
+    const query = `
+      SELECT *
+      FROM ${this.tableName}
+      WHERE
+        ${type}_id = ${data.analyzerId} AND 
+        parameter_id = ${data.parameterId} AND 
+        timebase_id = ${data.timebaseId}
+    `
+    return this.executeQuery(query);
+  }
+
+  async deleteAllParameterCurrentValues(type, parameterId, analyzerId) {
+    if(type === 'vc') parameterId = 0;
+    const timebases = await TimebaseModel.getAllTimebases();
+    const queries = timebases.map(async (timebase) => {
+      const currentValue = await this.getCurrentValue({timebaseId: timebase.id, parameterId, analyzerId}, type)
+      if(currentValue) return await this.delete(currentValue[0].id);
+      return null;
+    });
+    return await Promise.all(queries);
+  }
+
 }
 
 module.exports = new CurrentValuesModel();

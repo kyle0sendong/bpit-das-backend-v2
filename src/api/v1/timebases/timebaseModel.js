@@ -5,7 +5,6 @@ class TimebaseModel extends ApiBaseModel {
     super('timebases');
   }
 
-
   getAllTimebases() {
     const query = `
       SELECT *
@@ -15,8 +14,26 @@ class TimebaseModel extends ApiBaseModel {
     return this.executeQuery(query);
   }
 
+  async getTimebaseIdByTimebase(timebase) {
+    const query = `
+      SELECT id
+      FROM ${this.tableName}
+      WHERE timebase = ?
+    `;
+    const result = await this.executeQuery(query, [timebase]);
+    return result[0].id;
+  }
+
+  getEnabledTimebase() {
+    const query = `
+      SELECT *
+      FROM ${this.tableName}
+      WHERE enable = 1
+    `;
+    return this.executeQuery(query);
+  }
+
   updateTimebase(dataArray) {
-    
     const columns = ['timebase', 'enable'];
     let sql = `UPDATE ${this.tableName} SET `;
     const values = [];
@@ -42,8 +59,8 @@ class TimebaseModel extends ApiBaseModel {
     sql += ` WHERE timebase IN (${timebases})`
 
     return this.executeQuery(sql, values)
-
   }
+
 }
 
 module.exports = new TimebaseModel();

@@ -3,12 +3,15 @@ const routes = require("@routes");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const CustomError = require("./middleware/CustomError");
+const scheduledPolling = require("./features/data-collection/scheduledPolling");
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({
   extended: false
 }));
+
+scheduledPolling();
 
 app.use(cors({
   origin: true

@@ -1,3 +1,9 @@
+const getDateTimeNow = () => {
+  const date = new Date();
+  const dateAndTime = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
+  return dateAndTime;
+}
+
 const getDateTwoWeeksAgo = () => {
   const date = new Date()
   date.setDate(date.getDate()-14)
@@ -80,5 +86,6 @@ module.exports = {
   getUTCFormat,
   getWeeklyDateList,
   getMonthlyDateList,
-  getDateTodayToTomorrow
+  getDateTodayToTomorrow,
+  getDateTimeNow
 };
