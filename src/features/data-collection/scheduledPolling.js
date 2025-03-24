@@ -1,102 +1,31 @@
-
+const cron = require('node-cron');
 const TimebaseModel = require("@apiV1/timebases/TimebaseModel");
 
 const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
-
 const TcpParameterModel = require("@apiV1/parameters/tcp/TcpParameterModel");
-const VirtualChannelModel = require("@apiV1/parameters/virtual-channels/VirtualChannelModel");
+const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel");
+const SerialParameterModel = require("@apiV1/parameters/serial/SerialParameterModel");
 
-const { getDateTimeNow } = require("@utils/date");
-const { toSnakeCase } = require("@utils/strings");
-const { getDateRange } = require("./utils");
-const cron = require('node-cron');
-const ModbusRTU = require("modbus-serial");
+const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
+const VirtualChannelModel = require("@apiV1/parameters/virtual-channels/VirtualChannelModel");
 
 const tcpOneMinutePolling = require("./modbus-tcp/tcpOneMinutePolling");
 const tcpAboveOneMinutePolling = require("./modbus-tcp/tcpAboveOneMinutePolling");
 
+const serialOneMinutePolling = require("./serial/serialOneMinutePolling");
+const serialAboveOneMinutePolling = require("./serial/serialAboveOneMinutePolling");
+
 const vcOneMinutePolling = require("./virtual-channels/vcOneMinutePolling");
 const vcAboveOneMinutePolling = require("./virtual-channels/vcAboveOneMinutePolling");
 
-const setupModbusTcpCurrentValues = async (tcpAnalyzers, modbusTcpParameters, timebases) => {
-  for(let analyzer of tcpAnalyzers) {
-    const tcpParameters = modbusTcpParameters.filter((parameter) => analyzer.id === parameter.analyzer_id && parameter.enable === 1);
-    for(let parameter of tcpParameters) {
-      for(let timebase of timebases) {
-        // create rows for the current values if it does not exist yet
-        const isExist = await CurrentValueModel.checkCurrentValueExist(parameter.id, 'tcp', analyzer.id, timebase.id)
-        if(isExist) continue;
-        await CurrentValueModel.insert({
-          timebase_id: timebase.id,
-          parameter_id: parameter.id,
-          tcp_id: analyzer.id
-        })
-      }
-    }
-  }
-}
+const { getDateTimeNow, getDateRange } = require("@utils/date");
 
-const setupVirtualChannelCurrentValues = async (virtualChannels, timebases) => {
-  for(let virtualChannel of virtualChannels) {
-    for(let timebase of timebases) {
-      // create rows for the current values if it does not exist yet
-      const isExist = await CurrentValueModel.checkCurrentValueExist(0, 'vc', virtualChannel.id, timebase.id)
-      if(isExist) continue;
-      await CurrentValueModel.insert({
-        timebase_id: timebase.id,
-        vc_id: virtualChannel.id,
-      })
-    }
-  }
-}
-
-
-const createModbusTcpAccumulator = (tcpAnalyzers, modbusTcpParameters) => {
-  const accumulator = [];
-  for(let analyzer of tcpAnalyzers) {
-    for(let parameter of modbusTcpParameters) {
-      accumulator.push({
-        name: `tcp${analyzer.id}_${toSnakeCase(parameter.name)}`,
-        count: 0,
-        value: 0
-      });
-    }
-  }
-  return accumulator;
-}
-
-
-const createConnections = async (tcpAnalyzers) => {
-
-  const clients = [];
-  for(let tcp of tcpAnalyzers) {
-    const client = new ModbusRTU();
-    try {
-      await client.connectTCP(
-        tcp.host_address, {
-          port: tcp.port, 
-          unitId: 
-          tcp.device_address, 
-          timeout: 5000, 
-          autoReconnect: true,
-          reconnectTimeout: 2000
-      });
-
-      console.log(`Connected to ${tcp.name} (${tcp.host_address}:${tcp.port})`);
-      clients.push({
-        name: `${tcp.name}-${tcp.id}`,
-        client: client
-      });
-
-    } catch(error) {
-      console.log("error: ", error);
-    }
-  }
-  return clients;
-}
-
+const {
+  setupCurrentValues, 
+  setupVirtualChannelCurrentValues, 
+  createAccumulator, 
+  createTcpConnections, 
+  createSerialConnections } = require("./setups");
 
 // Function to convert minutes to cron expressions
 const getCronExpression = (timebase) => {
@@ -114,11 +43,15 @@ const getCronExpression = (timebase) => {
 };
 
 
-const createCronJobs = async (timebases, tcpParameters, tcpAnalyzers, virtualChannels) => {
+const createCronJobs = async (timebases, tcpAnalyzers, tcpParameters, serialAnalyzers, serialParameters, virtualChannels) => {
 
   const oneMinuteTimebase = timebases.find(item => item.timebase === 1);
-  const clientConnections = await createConnections(tcpAnalyzers);
-  const accumulator = createModbusTcpAccumulator(tcpAnalyzers, tcpParameters);
+  const currentDataTimebase = timebases.find(item => item.timebase === 0);
+  const tcpClientConnections = await createTcpConnections(tcpAnalyzers);
+  const tcpAccumulator = createAccumulator(tcpAnalyzers, tcpParameters, 'tcp');
+
+  const serialClientConnections = await createSerialConnections(serialAnalyzers);
+  const serialAccumulator = createAccumulator(serialAnalyzers, serialParameters, 'serial');
 
   // Loop through each timebase and create a cron job
   timebases.forEach((timebase) => {
@@ -126,15 +59,15 @@ const createCronJobs = async (timebases, tcpParameters, tcpAnalyzers, virtualCha
     if(timebase.timebase == 1) {
       cron.schedule('*/5 * * * * *', async () => {
         await new Promise( (resolve) => {
-          return resolve(tcpOneMinutePolling(clientConnections, oneMinuteTimebase.id, tcpAnalyzers, tcpParameters, accumulator));
+          resolve(serialOneMinutePolling(serialClientConnections, [currentDataTimebase.id, oneMinuteTimebase.id], serialAnalyzers, serialParameters, serialAccumulator));
+          resolve(tcpOneMinutePolling(tcpClientConnections, [currentDataTimebase.id, oneMinuteTimebase.id], tcpAnalyzers, tcpParameters, tcpAccumulator));
         })
       });
 
-      // Create 1 row every minute inside the analyzer data table
       cron.schedule('* * * * *', async () => {
         await new Promise( (resolve) => {
-          resolve(AnalyzerDataModel.insertData({datetime: getDateTimeNow()}, 1));
-          resolve(vcOneMinutePolling(oneMinuteTimebase.id, virtualChannels, tcpParameters));
+          resolve(AnalyzerDataModel.insertData({datetime: getDateTimeNow()}, 1));      // Create 1 row every minute inside the analyzer 1 minute data table
+          resolve(vcOneMinutePolling(oneMinuteTimebase.id, virtualChannels, tcpParameters, serialParameters));
         })
       });
     }
@@ -144,8 +77,10 @@ const createCronJobs = async (timebases, tcpParameters, tcpAnalyzers, virtualCha
         const dateRange = getDateRange(timebase.timebase);
         await new Promise( (resolve) => {
           resolve(AnalyzerDataModel.insertData({datetime: getDateTimeNow()}, timebase.timebase));
+          resolve(tcpAboveOneMinutePolling(dateRange, timebase, tcpAnalyzers, tcpParameters));
+          resolve(serialAboveOneMinutePolling(dateRange, timebase, serialAnalyzers, serialParameters));
           resolve(vcAboveOneMinutePolling(dateRange, virtualChannels, timebase));
-          resolve(tcpAboveOneMinutePolling(dateRange, timebase, tcpParameters, tcpAnalyzers));
+
         })
       });
     }
@@ -156,14 +91,19 @@ const createCronJobs = async (timebases, tcpParameters, tcpAnalyzers, virtualCha
 const scheduledPolling = async () => {
 
   const timebases = await TimebaseModel.getEnabledTimebase();
-  const tcpParameters = await TcpParameterModel.getAll();
   const tcpAnalyzers = await TcpAnalyzerModel.getAll();
+  const tcpParameters = await TcpParameterModel.getAll();
+
+  const serialAnalyzers = await SerialAnalyzerModel.getAll();
+  const serialParameters = await SerialParameterModel.getAll();
+  
   const virtualChannels = await VirtualChannelModel.getAll();
 
-  await setupModbusTcpCurrentValues(tcpAnalyzers, tcpParameters, timebases);
+  await setupCurrentValues(tcpAnalyzers, tcpParameters, timebases, 'tcp');
+  await setupCurrentValues(serialAnalyzers, serialParameters, timebases, 'serial');
   await setupVirtualChannelCurrentValues(virtualChannels, timebases);
 
-  createCronJobs(timebases, tcpParameters, tcpAnalyzers, virtualChannels);
+  createCronJobs(timebases, tcpAnalyzers, tcpParameters, serialAnalyzers, serialParameters, virtualChannels);
 
 }
 

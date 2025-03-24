@@ -36,7 +36,25 @@ class SerialParameterController {
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await SerialParameterModel.updateParameter(req.body, 'serial', req.user)
+    const parametersToUpdate = req.body;
+
+    // Process each parameter in the array
+    for (const paramUpdate of parametersToUpdate) {
+      try {
+        // Get the current parameter from the database
+        const currentParameter = await SerialParameterModel.getById(paramUpdate.id);
+        if (!currentParameter) continue;
+        
+        if (SerialParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
+            await SerialParameterModel.updateParameter(paramUpdate, 'serial', req.user);
+        } else {
+            console.log("No changes on ", paramUpdate.name)
+        }
+      } catch(error) {
+        console.log(error)
+      }
+    }
+
     return res.status(200).send(`Updated parameters`)
   })
 

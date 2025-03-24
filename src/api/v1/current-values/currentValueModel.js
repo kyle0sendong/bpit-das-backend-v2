@@ -7,7 +7,7 @@ class CurrentValuesModel extends ApiBaseModel {
     super('current_values');
     this.tcpParameterTableName = 'tcp_parameters';
     this.serialParameterTableName = 'serial_parameters';
-    this.virtualChannelTableNmae = 'virtual_channels';
+    this.virtualChannelTableName = 'virtual_channels';
     this.timebaseTableName = 'timebases';
   }
 
@@ -29,23 +29,43 @@ class CurrentValuesModel extends ApiBaseModel {
 
   getCurrentValuesByAnalyzerId = async (id, type) => {
 
-    const parameterTableName = type === 'tcp' ? this.tcpParameterTableName : type === 'serial' ? this.serialParameterTableName : 'virtual_channels';
+    const parameterTableName = type === 'tcp' ? this.tcpParameterTableName : type === 'serial' ? this.serialParameterTableName : this.virtualChannelTableName;
 
-    const query = `
-      SELECT
-        ${this.tableName}.id,
-        ${this.tableName}.current_value AS currentValue,
-        ${this.tableName}.datetime,
-        ${this.timebaseTableName}.timebase,
-        ${parameterTableName}.name AS parameterName,
-        ${parameterTableName}.request_interval AS requestInterval
-      FROM ${this.tableName}
-      INNER JOIN ${parameterTableName} on ${this.tableName}.${type}_id = ${parameterTableName}.analyzer_id
-      INNER JOIN ${this.timebaseTableName} ON ${this.tableName}.timebase_id = ${this.timebaseTableName}.id
-      WHERE ${type}_id = ?
-    `;
+    let query = '';
 
-    return await this.executeQuery(query, [id]);
+    if(type !== 'vc') {
+      query = `
+        SELECT
+          ${this.tableName}.id,
+          ${this.tableName}.current_value AS currentValue,
+          ${this.tableName}.datetime,
+          ${this.timebaseTableName}.timebase,
+          ${parameterTableName}.name AS parameterName,
+          ${parameterTableName}.request_interval AS requestInterval
+        FROM ${this.tableName}
+        INNER JOIN ${parameterTableName} ON ${this.tableName}.parameter_id = ${parameterTableName}.id
+        INNER JOIN ${this.timebaseTableName} ON ${this.tableName}.timebase_id = ${this.timebaseTableName}.id
+        WHERE ${type}_id = ? 
+          AND ${parameterTableName}.enable = 1 
+          AND ${this.timebaseTableName}.enable = 1
+      `;
+    } else {
+      query = `
+        SELECT
+          ${this.tableName}.id,
+          ${this.tableName}.current_value AS currentValue,
+          ${this.tableName}.datetime,
+          ${this.timebaseTableName}.timebase,
+          ${parameterTableName}.name AS parameterName
+        FROM ${this.tableName}
+        INNER JOIN ${parameterTableName}
+        INNER JOIN ${this.timebaseTableName} ON ${this.tableName}.timebase_id = ${this.timebaseTableName}.id
+        WHERE vc_id != 0 AND ${parameterTableName}.enable = 1 AND ${this.timebaseTableName}.enable = 1
+      `;
+    }
+
+    const result = await this.executeQuery(query, [id])
+    return result;
   }
 
   updateCurrentValue = (data, type) => {

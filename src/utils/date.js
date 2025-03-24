@@ -77,6 +77,30 @@ const getUTCFormat = (datetime) => {
   return datetimeFormat
 }
 
+const getDateRange = (timebase) => {
+  const now = Date.now(); // Current timestamp in milliseconds
+  const pastTime = now - (timebase * 60 * 1000); // Subtract timebase in minutes
+
+  // Function to format timestamp to local date-time
+  const formatDateTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const yyyy = date.getFullYear();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+
+    return `${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}`;
+  };
+
+  // Return the date range using timestamps
+  return [
+    formatDateTime(pastTime),
+    formatDateTime(now)
+  ];
+};
+
 module.exports = {
   getDayEquivalent,
   getMonthEquivalent,
@@ -87,5 +111,6 @@ module.exports = {
   getWeeklyDateList,
   getMonthlyDateList,
   getDateTodayToTomorrow,
-  getDateTimeNow
+  getDateTimeNow,
+  getDateRange
 };

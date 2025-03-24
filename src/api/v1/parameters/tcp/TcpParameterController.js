@@ -4,6 +4,7 @@ const { createRandomNumber } = require("@utils/rng");
 
 class TcpParameterController {
 
+
   getParameters = asyncHandler( async(req, res) => {
 
     const analyzerId = req.query.id ?? 0;
@@ -36,7 +37,27 @@ class TcpParameterController {
   })
 
   updateParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.updateParameter(req.body, 'tcp', req.user)
+    const parametersToUpdate = req.body;
+
+    // Process each parameter in the array
+    for (const paramUpdate of parametersToUpdate) {
+      try {
+        // Get the current parameter from the database
+        const currentParameter = await TcpParameterModel.getById(paramUpdate.id);
+        if (!currentParameter) continue;
+        
+        // Check if this parameter has actually changed
+        if (TcpParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
+            await TcpParameterModel.updateParameter(paramUpdate, 'tcp', req.user);
+        } else {
+            // No changes for this parameter
+            console.log("no changes on ", paramUpdate.name)
+        }
+      } catch(error) {
+        console.log(error)
+      }
+    }
+
     return res.status(200).send(`Updated parameters`)
   })
 

@@ -19,6 +19,7 @@ class AlterTableDataColumnModel {
   async renameDataColumns(dataArray) {
     const timebases = await TimebaseModel.getAllTimebases();
     const queries = timebases.map((timebase) => {
+      if (timebase.timebase === 0) return null;
       const tableName = `data_t${timebase.timebase}`;
       const query = `
         ALTER TABLE ${tableName} 
@@ -32,6 +33,7 @@ class AlterTableDataColumnModel {
   async insertDataColumn(data) {
     const timebases = await TimebaseModel.getAllTimebases();
     const queries = timebases.map((timebase) => {
+      if (timebase.timebase === 0) return null;
       const tableName = `data_t${timebase.timebase}`;
       const query = `
         ALTER TABLE ${tableName} ADD ${data.columnName} ${data.dataType}
@@ -45,6 +47,7 @@ class AlterTableDataColumnModel {
     
     const timebases = await TimebaseModel.getAllTimebases();
     const queries = timebases.map((timebase) => {
+      if (timebase.timebase === 0) return null;
       const tableName = `data_t${timebase.timebase}`;
       const query = `
         ALTER TABLE ${tableName} DROP ${data.columnName}

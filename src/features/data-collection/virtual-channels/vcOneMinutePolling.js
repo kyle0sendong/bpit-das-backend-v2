@@ -2,11 +2,11 @@ const math = require('mathjs');
 
 const { toSnakeCase } = require("@utils/strings");
 const { getDateTimeNow } = require("@utils/date");
-const { delay } = require("../utils");
+const { delay } = require("@utils/delay");
 const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
 const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
 
-const getVirtualChannelVariables = async (datetime, virtualChannel, tcpParameters) => {
+const getVirtualChannelVariables = async (datetime, virtualChannel, tcpParameters, serialParameters) => {
   const result = {};
   const keys = ['x', 'y', 'z', 'a', 'b', 'c'];
 
@@ -15,7 +15,6 @@ const getVirtualChannelVariables = async (datetime, virtualChannel, tcpParameter
     keys.map(async (key) => {
       if (virtualChannel[key] !== null) {
         const [type, id] = virtualChannel[key].split('-');
-
         if (type === 'tcp') {
           const parameter = tcpParameters.find(item => item.id === parseInt(id));
           if (parameter) {
@@ -26,14 +25,24 @@ const getVirtualChannelVariables = async (datetime, virtualChannel, tcpParameter
             }
           }
         }
+
+        if (type === 'serial') {
+          const parameter = serialParameters.find(item => item.id === parseInt(id));
+          if (parameter) {
+            const columnName = `serial${parameter.analyzer_id}_${toSnakeCase(parameter.name)}`;
+            const data = await AnalyzerDataModel.getAnalyzerDataByDate(datetime, columnName, 1);
+            if (data) {
+              result[key] = data.data;
+            }
+          }
+        }
       }
     })
   );
-
   return result;
 };
 
-const vcOneMinutePolling = async (timebaseId, virtualChannels, tcpParameters) => {
+const vcOneMinutePolling = async (timebaseId, virtualChannels, tcpParameters, serialParameters) => {
 
   try {
     const datetime = getDateTimeNow();
@@ -41,12 +50,12 @@ const vcOneMinutePolling = async (timebaseId, virtualChannels, tcpParameters) =>
     // Process all virtual channels in parallel using Promise.all()
     await Promise.all(
       virtualChannels.map(async (virtualChannel) => {
-        const virtualChannelVariables = await getVirtualChannelVariables(datetime, virtualChannel, tcpParameters);
+        const virtualChannelVariables = await getVirtualChannelVariables(datetime, virtualChannel, tcpParameters, serialParameters);
         const currentValue = {
           parameterId: 0,
           analyzerId: virtualChannel.id,
           timebaseId,
-          data: { current_value: -9999 },
+          data: { current_value: -9999, datetime: datetime },
         };
 
         try {

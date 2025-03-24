@@ -46,6 +46,14 @@ class ParameterBaseModel extends ApiBaseModel {
     return this.executeQuery(query, [id]);
   }
 
+  async getParametersByAnalyzerIdAndType(id, type) {
+    const query = `
+      SELECT * FROM ${type}_parameters 
+      WHERE analyzer_id = ?
+    `
+    return this.executeQuery(query, [id]);
+  }
+
 
   async insertParameter(dataArray, type, user, numberOfParameter, analyzerId = 0) {
     try {
@@ -128,15 +136,23 @@ class ParameterBaseModel extends ApiBaseModel {
     }
   }
 
+  // helper function for update Parameter
+  hasParameterChanged = (original, updated) => {
+    const updateKeys = Object.keys(updated);
+    for (const key of updateKeys) {
+      if (key === 'id') continue;
+      if (JSON.stringify(original[key]) !== JSON.stringify(updated[key])) return true;
+    }
+    
+    return false;
+  }
 
-  async updateParameter(dataArray, type, user) {
+  async updateParameter(data, type, user) {
 
-    // Create array of promises
-    const updatePromises = dataArray.map(async (data) => {
       try {
-
+        console.log(data)
         const parameter = await this.getById(data.id);
-        
+        console.log(parameter)
         // Process Log changes and tags
         let changes = `Updated '${parameter[0].name}' from `;
         let tags = "";
@@ -188,13 +204,7 @@ class ParameterBaseModel extends ApiBaseModel {
         console.error(`Error updating parameter with ID ${data.id}:`, error);
         throw error;
       }
-    });
-  
-    try {
-      return await Promise.all(updatePromises);
-    } catch (error) {
-      console.error("Error updating one or more parameters:", error);
-    }
+    
   }
   
 }

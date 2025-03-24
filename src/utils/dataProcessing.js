@@ -114,7 +114,42 @@ const readModbusData = async (client, parameter) => {
   }
 };
 
+const readModbusDataAsciiMode = async (client, parameter) => {
+  try {
+      if (!client) throw new Error("No client connection available");
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+      const address = parameter.start_register;
+      const quantity = parameter.quantity;
+      const deviceId = parameter.device_address;
+      const functionCode = input.match(/0x([0-9A-Fa-f]{2})/);
+      // Construct ASCII Modbus command (Function Code 03 = Read Holding Registers)
+      const command = `:${deviceId.toString(16).padStart(2, "0")}${functionCode}${address.toString(16).padStart(4, "0")}${quantity.toString(16).padStart(4, "0")}CRLF`;
 
-module.exports = { readModbusData, decodeData, cleanFormula, delay };
+      console.log(`Sending ASCII command: ${command}`);
+
+      // Send command to serial port and read response from the serial device
+      await client.write(command);
+      const response = await client.read();
+
+      console.log(`Received ASCII response: ${response}`);
+
+      // Extract data from response
+      if (response.startsWith(":")) {
+          // Convert response from HEX to numeric data
+          const data = parseInt(response.substring(7, 11), 16);
+          return data;
+      }
+
+      return response
+      throw new Error("Invalid ASCII response received");
+
+  } catch (error) {
+      console.error("Error reading Modbus ASCII data:", error.message);
+      return null;
+  }
+};
+
+
+
+
+module.exports = { readModbusData, decodeData, cleanFormula };

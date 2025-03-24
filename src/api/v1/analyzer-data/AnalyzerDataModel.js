@@ -1,29 +1,59 @@
 const ApiBaseModel = require("@api/ApiBaseModel");
 const ParameterBaseModel = require("@api/v1/parameters/ParameterBaseModel");
+const VirtualChannelModel = require("@api/v1/parameters/virtual-channels/VirtualChannelModel");
 const { toSnakeCase } = require("@utils/strings");
 
 class AnalyzerDataModel extends ApiBaseModel{
   
   constructor() {
     super("data_t")
+    this.parameterModel = new ParameterBaseModel('tcp_parameters')
   }
   
   async getAnalyzerData(data) {
+    try {
+      // take all analyzer parameters
+      const parameters = await this.parameterModel.getParametersByAnalyzerIdAndType(data.analyzer, data.analyzerType);
 
-    // take all analyzer parameters
-    const parameters = await ParameterBaseModel.getParametersByAnalyzerId(data.analyzer);
-    const columns = [
-      "DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date, datetime", 
-      ...parameters.map( (parameter) => toSnakeCase(`${parameter.name}_${data.analyzerType}${data.analyzer}`))
-    ];
-    const query = `
-      SELECT ${columns} 
-      FROM ${this.tableName}${data.timebase} 
-      WHERE DATE(datetime) BETWEEN ? AND ?
-      ORDER BY datetime DESC
-    `;
+      const columns = [
+        "DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date, datetime", 
+        ...parameters.map( (parameter) => toSnakeCase(`${data.analyzerType}${data.analyzer}_${parameter.name}`))
+      ];
 
-    return this.executeQuery(query, [data.from, data.to]);
+      const query = `
+        SELECT ${columns} 
+        FROM ${this.tableName}${data.timebase} 
+        WHERE DATE(datetime) BETWEEN ? AND ?
+        ORDER BY datetime DESC
+      `;
+
+      return this.executeQuery(query, [data.from, data.to]);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async getVirtualChannelsData(data) {
+    try {
+      // take all virtual channels
+      const virtualChannels = await VirtualChannelModel.getAll();
+
+      const columns = [
+        "DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date, datetime", 
+        ...virtualChannels.map( (virtualChannel) => toSnakeCase(`vc_${virtualChannel.name}`))
+      ];
+
+      const query = `
+        SELECT ${columns} 
+        FROM ${this.tableName}${data.timebase} 
+        WHERE DATE(datetime) BETWEEN ? AND ?
+        ORDER BY datetime DESC
+      `;
+
+      return this.executeQuery(query, [data.from, data.to]);
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async getAnalyzerDataByRange(dateRange, columnName, timebase) {

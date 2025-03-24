@@ -1,85 +1,123 @@
-const { readRegister } = require("./utils");
 const {toSnakeCase} = require("@utils/strings");
-
+const { getDateTimeNow } = require("@utils/date");
+const { readModbusData, cleanFormula } = require("@utils/dataProcessing");
 const ModbusRTU = require("modbus-serial");
+const math = require('mathjs');
 
+const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
 
-const serialOneMinutePolling = async (timebaseId, tcpAnalyzers, modbusTcpParameters, accumulator) => {
+const serialOneMinutePolling = async (clientConnections, timebaseId, analyzers, parameters, accumulator) => {
 
-
-    // Function to initialize the connection
-    const initializeConnection = async () => {
-      try {
-        await client.connectRTU("COM1", { baudRate: 9600 });
-        console.log("Connected to Modbus RTU server");
-        client.setID(1); // Set the Modbus device ID
-      } catch (err) {
-        console.error("Failed to initialize connection:", err);
-      }
-    };
-  
-    // Function to read registers
-    const testReadRegister = async () => {
-      try {
-        if (!client.isOpen) {
-          console.log("Connection not open. Reconnecting...");
-          await initializeConnection();
-        }
-  
-        // Read holding registers (address 0, length 1)
-        const data = await client.readHoldingRegisters(0, 1);
-        console.log("Received registers:", data.data);
-      } catch (err) {
-        console.error("Modbus RTU Error:", err);
-  
-        // If there's an error, close the connection and attempt to reconnect
-        if (client.isOpen) {
-          client.close();
-          console.log("Connection closed due to error");
-        }
-      }
-    };
-  
-    
   try {
-    const seconds = new Date().getSeconds();
 
-    for(let analyzer of tcpAnalyzers) {
-      
-      // connect to modbus client
+    const date = new Date();
+    const seconds = date.getSeconds();
+    const datetimeNow = getDateTimeNow();
 
-      for (let parameter of modbusTcpParameters) {
-        const accumulatorIndex = accumulator.findIndex( (item) => item.name == `${toSnakeCase(parameter.name)}_tcp${analyzer.id}`);
-        const parameterAccumulator = accumulator[accumulatorIndex];
-  
-        if(seconds % parameter.request_interval == 0) {
-          parameterAccumulator.count += 1;
-          // read register
-  
-          // update current value
-          // const currentValue = await CurrentValueModel.getCurrentValueByParameterAndAnalyzer(parameter.id, analyzer.id)
-          // await CurrentValueModel.update({
-          //   id: currentValue.id,
-          //   current_value: parameterAccumulator.count
-          // })
+    await Promise.all(
+      analyzers.map(async (analyzer) => {
+        const clientIndex = clientConnections.findIndex((c) => c.name === `serial${analyzer.name}-${analyzer.id}`);
+        let client = clientConnections[clientIndex];
 
-          // add value to current value
-          console.log(seconds, parameterAccumulator.count, currentValue);
+        // 🔄 Reconnect if client is missing or disconnected
+        if (!client || !client.client.isOpen) {
+          console.warn(`Client not found or disconnected for Serial Analyzer: ${analyzer.name} (${analyzer.id}). Reconnecting...`);
+
+          try {
+            const newClient = new ModbusRTU();
+            await newClient.connectRTUBuffered(analyzer.port_name, {
+              baudRate: analyzer.baud_rate,
+              parity: analyzer.parity,
+              dataBits: analyzer.data_bits,
+              stopBits: analyzer.stop_bits
+            });
+
+            newClient.setID(analyzer.device_address);
+            newClient.setTimeout(5000); // Prevents hanging
+
+            console.log(`Reconnected to ${analyzer.port_name}`);
+
+            if (clientIndex !== -1) {
+              clientConnections.splice(clientIndex, 1);
+            }
+            
+            // Push new client to the array
+            client = { name: `serial${analyzer.name}-${analyzer.id}`, client: newClient };
+            // Replace existing client in the array
+            clientConnections.push({
+              name: `serial${analyzer.name}-${analyzer.id}`,
+              client: newClient
+            });
+            
+          } catch (err) {
+            console.error(`Failed to reconnect to ${analyzer.port_name} - ${err.message}`);
+            return; // Skip this analyzer if reconnection fails
+          }
         }
-  
-        if(seconds == 0) {
-          // insert to data_t1
-          console.log(parameter.name, parameterAccumulator.value, "insert to 1 minute")
-          parameterAccumulator.count = 0;
-          parameterAccumulator.value = 0;
-        }
-      }
-    }
+
+        const filteredParameters = parameters.filter((parameter) => analyzer.id === parameter.analyzer_id && parameter.enable === 1);
+    
+        await Promise.all(
+          filteredParameters.map(async (parameter) => {
+            const columnName = `serial${analyzer.id}_${toSnakeCase(parameter.name)}`;
+            const accumulatorIndex = accumulator.findIndex((item) => item.name === columnName);
+            const parameterAccumulator = accumulator[accumulatorIndex];
+    
+            if (seconds % parameter.request_interval == 0) {
+              const data = await readModbusData(client.client, parameter);
+              const currentValue = {
+                analyzerId: analyzer.id,
+                parameterId: parameter.id,
+                timebaseId: timebaseId[0],
+                data: { current_value: -9999, datetime: datetimeNow },
+              };
+    
+              if (data) {
+                const x = data;
+                const cleanedFormula = cleanFormula(parameter.formula);
+                const result = math.round(math.evaluate(cleanedFormula, { x }), 5);
+                
+                parameterAccumulator.count += 1;
+                parameterAccumulator.value = parameterAccumulator.value + result;
+                currentValue.data.current_value = result;
+                await CurrentValueModel.updateCurrentValue(currentValue, "serial");
+              } else {
+                await CurrentValueModel.updateCurrentValue(currentValue, "serial");
+              }
+            }
+    
+            if (seconds == 0) {
+              const sampling = (60 / parameter.request_interval) * (analyzer.sampling / 100);
+              const currentValue = {
+                analyzerId: analyzer.id,
+                parameterId: parameter.id,
+                timebaseId: timebaseId[1],
+                data: { current_value: -9999, datetime: datetimeNow },
+              };
+
+              if (parameterAccumulator.count >= sampling) {
+                const averageValue = parameterAccumulator.value / parameterAccumulator.count;
+                
+                await AnalyzerDataModel.updateData({[columnName]: averageValue,datetime: datetimeNow},1);
+
+                currentValue.data.current_value = averageValue;
+                await CurrentValueModel.updateCurrentValue(currentValue, "serial");
+              } else {
+                await AnalyzerDataModel.updateData({[columnName]: -9999, datetime: datetimeNow},1);
+                await CurrentValueModel.updateCurrentValue(currentValue, "serial");
+              }
+              parameterAccumulator.count = 0;
+              parameterAccumulator.value = 0;
+            }
+          })
+        );
+      })
+    );
 
   } catch (error) {
     console.log(error);
   }
 }
-
 
 module.exports = serialOneMinutePolling;

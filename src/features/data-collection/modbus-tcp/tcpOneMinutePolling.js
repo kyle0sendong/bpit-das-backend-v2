@@ -1,36 +1,69 @@
 const {toSnakeCase} = require("@utils/strings");
 const { getDateTimeNow } = require("@utils/date");
-const { readModbusData, cleanFormula } = require("../utils")
+const { readModbusData, cleanFormula } = require("@utils/dataProcessing");
 const math = require('mathjs');
+const ModbusRTU = require("modbus-serial");
 
 const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
 const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
 
-const tcpOneMinutePolling = async (clientConnections, timebaseId, tcpAnalyzers, modbusTcpParameters, accumulator) => {
+const tcpOneMinutePolling = async (clientConnections, timebaseId, analyzers, parameters, accumulator) => {
 
   try {
 
     const date = new Date();
     const seconds = date.getSeconds();
+    const datetimeNow = getDateTimeNow();
 
     await Promise.all(
-      tcpAnalyzers.map(async (tcp) => {
-        const client = clientConnections.find((connection) => connection.name === `${tcp.name}-${tcp.id}`);
-        const tcpParameters = modbusTcpParameters.filter((parameter) => tcp.id === parameter.analyzer_id && parameter.enable === 1);
-    
+      analyzers.map(async (analyzer) => {
+        const clientIndex = clientConnections.findIndex((c) => c.name === `tcp${analyzer.name}-${analyzer.id}`);
+        let client = clientConnections[clientIndex];
+
+        // Reconnect if the client is missing or disconnected
+        if (!client || !client.client.isOpen) {
+          console.warn(`Client not found or disconnected for TCP Analyzer: ${analyzer.name} (${analyzer.id}). Reconnecting...`);
+
+          try {
+            const newClient = new ModbusRTU();
+            await newClient.connectTCP(analyzer.host_address, {
+              port: analyzer.port,
+              unitId: analyzer.device_address, 
+              timeout: 5000
+            });
+
+            console.log(`Reconnected to ${analyzer.host_address}:${analyzer.port}`);
+
+            // Remove old entry if it exists
+            if (clientIndex !== -1) {
+              clientConnections.splice(clientIndex, 1);
+            }
+
+            // Push new client to the array
+            client = { name: `tcp${analyzer.name}-${analyzer.id}`, client: newClient };
+            clientConnections.push(client);
+          } catch (err) {
+            console.error(`Failed to reconnect to ${analyzer.host_address}:${analyzer.port} - ${err.message}`);
+            return; // Skip this TCP analyzer if reconnection fails
+          }
+        }
+
+        const filteredParameters = parameters.filter((parameter) => analyzer.id === parameter.analyzer_id && parameter.enable === 1);
+        
         await Promise.all(
-          tcpParameters.map(async (parameter) => {
-            const columnName = `tcp${tcp.id}_${toSnakeCase(parameter.name)}`;
+          filteredParameters.map(async (parameter) => {
+            const columnName = `tcp${analyzer.id}_${toSnakeCase(parameter.name)}`;
             const accumulatorIndex = accumulator.findIndex((item) => item.name === columnName);
             const parameterAccumulator = accumulator[accumulatorIndex];
     
+            // Run every interval
             if (seconds % parameter.request_interval == 0) {
               const data = await readModbusData(client.client, parameter);
               const currentValue = {
-                analyzerId: tcp.id,
+                analyzerId: analyzer.id,
                 parameterId: parameter.id,
-                timebaseId: timebaseId,
-                data: { current_value: -9999 },
+                timebaseId: timebaseId[0],
+                data: { current_value: -9999, datetime: datetimeNow },
               };
     
               if (data) {
@@ -47,25 +80,24 @@ const tcpOneMinutePolling = async (clientConnections, timebaseId, tcpAnalyzers, 
               }
             }
     
+            // After finishing a minute
             if (seconds == 0) {
-              const sampling = (60 / parameter.request_interval) * (tcp.sampling / 100);
+              const currentValue = {
+                analyzerId: analyzer.id,
+                parameterId: parameter.id,
+                timebaseId: timebaseId[1],
+                data: { current_value: -9999 },
+              };
+              const sampling = (60 / parameter.request_interval) * (analyzer.sampling / 100);
+
               if (parameterAccumulator.count >= sampling) {
                 const averageValue = parameterAccumulator.value / parameterAccumulator.count;
-                await AnalyzerDataModel.updateData(
-                  {
-                    [columnName]: averageValue,
-                    datetime: getDateTimeNow(),
-                  },
-                  1
-                );
+                await AnalyzerDataModel.updateData({[columnName]: averageValue, datetime: datetimeNow}, 1);
+                currentValue.data.current_value = averageValue;
+                await CurrentValueModel.updateCurrentValue(currentValue, "tcp");
               } else {
-                await AnalyzerDataModel.updateData(
-                  {
-                    [columnName]: -9999,
-                    datetime: getDateTimeNow(),
-                  },
-                  1
-                );
+                await AnalyzerDataModel.updateData({[columnName]: -9999, datetime: datetimeNow}, 1);
+                await CurrentValueModel.updateCurrentValue(currentValue, "tcp");
               }
               parameterAccumulator.count = 0;
               parameterAccumulator.value = 0;

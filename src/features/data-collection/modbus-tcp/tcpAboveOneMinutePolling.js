@@ -1,21 +1,21 @@
 const {toSnakeCase} = require("@utils/strings");
 const { getDateTimeNow } = require("@utils/date");
-const { delay } = require("../utils")
+const { delay } = require("@utils/delay")
 const math = require('mathjs');
 const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
 const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
 
-const tcpAboveOneMinutePolling = async (dateRange, timebase, modbusTcpParameters, tcpAnalyzers) => {
+const tcpAboveOneMinutePolling = async (dateRange, timebase, analyzers, parameters) => {
 
   try {
     await delay(5000); // buffer delay for analyzer data
-
+    const datetimeNow = getDateTimeNow();
     await Promise.all(
-      tcpAnalyzers.map(async (tcp) => {
-        const tcpParameters = modbusTcpParameters.filter((parameter) => tcp.id === parameter.analyzer_id && parameter.enable === 1);
+      analyzers.map(async (tcp) => {
+        const filteredParameters = parameters.filter((parameter) => tcp.id === parameter.analyzer_id && parameter.enable === 1);
     
         await Promise.all(
-          tcpParameters.map(async (parameter) => {
+          filteredParameters.map(async (parameter) => {
             const columnName = `tcp${tcp.id}_${toSnakeCase(parameter.name)}`;
             const data = await AnalyzerDataModel.getAnalyzerDataByRange(dateRange, columnName, 1);
 
@@ -23,7 +23,7 @@ const tcpAboveOneMinutePolling = async (dateRange, timebase, modbusTcpParameters
               analyzerId: tcp.id,
               parameterId: parameter.id,
               timebaseId: timebase.id,
-              data: { current_value: -9999 },
+              data: { current_value: -9999, datetime: datetimeNow },
             };
             const sampling = (data.dataCount / timebase.timebase) * 100;
             if (sampling > tcp.sampling) {
@@ -32,7 +32,7 @@ const tcpAboveOneMinutePolling = async (dateRange, timebase, modbusTcpParameters
               await AnalyzerDataModel.updateData(
                 {
                   [columnName]: averageValue,
-                  datetime: getDateTimeNow(),
+                  datetime: datetimeNow,
                 },
                 timebase.timebase
               );
@@ -40,7 +40,7 @@ const tcpAboveOneMinutePolling = async (dateRange, timebase, modbusTcpParameters
               await AnalyzerDataModel.updateData(
                 {
                   [columnName]: -9999,
-                  datetime: getDateTimeNow(),
+                  datetime: datetimeNow,
                 },
                 timebase.timebase
               );

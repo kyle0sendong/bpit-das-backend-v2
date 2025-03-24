@@ -27,6 +27,7 @@ router.get('/virtual-channels', VirtualChannelController.getVirtualChannel);
 router.get('/tcp-parameters', TcpParameterController.getParameters);
 router.get('/serial-parameters', SerialParameterController.getParameters);
 router.get('/analyzer-data', AnalyzerDataController.getAnalyzerData);
+router.get('/virtual-channels-data', AnalyzerDataController.getVirtualChannelsData)
 
 router.post('/login', UserController.loginUser);
 

@@ -8,7 +8,7 @@ class CurrentValueController {
     const id = req.query.id ?? 0;
 
     if (id > 0) {
-      const result = await CurrentValueModel.getCurrentValuesByAnalyzerId(req.query.id);
+      const result = await CurrentValueModel.getCurrentValuesByAnalyzerId(req.query.id, req.query.type);
       return res.status(200).json(result);
     } else {
       const currentValues = await CurrentValueModel.getAll();
