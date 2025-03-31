@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const VirtualChannelModel = require('./VirtualChannelModel');
-const { createRandomNumber } = require("@utils/rng");
+const VirtualChannelModel = require('./VirtualChannelModel.js');
+const { createRandomNumber } = require("@utils/rng.js");
 
 class VirtualChannelController {
 

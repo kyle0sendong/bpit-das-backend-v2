@@ -1,4 +1,4 @@
-const ApiBaseModel = require("@api/ApibaseModel");
+const ApiBaseModel = require("@api/ApiBaseModel.js");
 
 class StationModel extends ApiBaseModel {
   constructor() {

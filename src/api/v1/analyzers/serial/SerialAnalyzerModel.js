@@ -1,4 +1,5 @@
-const AnalyzerBaseModel = require("../AnalyzerBaseModel");
+const AnalyzerBaseModel = require("../AnalyzerBaseModel.js");
+const { SerialPort, SerialPortInfo } = require('serialport');
 
 class SerialAnalyzerModel extends AnalyzerBaseModel {
 
@@ -6,6 +7,11 @@ class SerialAnalyzerModel extends AnalyzerBaseModel {
     super('serial_analyzers');
 	}
 
+  async getAvailablePorts() {
+    const ports = await SerialPort.list();
+    return ports;
+  }
+  
 }
 
 module.exports = new SerialAnalyzerModel();

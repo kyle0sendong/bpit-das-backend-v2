@@ -1,9 +1,9 @@
 const express = require("express");
 const routes = require("@routes");
 const cors = require("cors");
-const errorHandler = require("./middleware/errorHandler");
-const CustomError = require("./middleware/CustomError");
-const scheduledPolling = require("./features/data-collection/scheduledPolling");
+const errorHandler = require("./middleware/errorHandler.js");
+const CustomError = require("./middleware/CustomError.js");
+const pollingScheduler  = require("./features/data-collection/PollingScheduler.js");
 
 const app = express();
 app.use(express.json());
@@ -11,17 +11,13 @@ app.use(express.urlencoded({
   extended: false
 }));
 
-scheduledPolling();
+pollingScheduler.start();
 
 app.use(cors({
   origin: true
 }));
 
 app.use("/api", routes);
-
-app.get('/health', (req, res) => {
-  res.status(200).send("Node Health: Okay")
-});
 
 app.all('*', (req, res, next) => {
   const error = new CustomError('Error', res.status(404));

@@ -1,5 +1,6 @@
-const UserModel = require("./UserModel");
 const asyncHandler = require("express-async-handler");
+const UserModel = require("./UserModel.js");
+
 
 class UserController {
 
@@ -9,8 +10,13 @@ class UserController {
   })
   
   registerUser = asyncHandler(async (req, res) => {
-    const result = await UserModel.register(req.body);
-    return res.status(result.code).json(result.json);
+    try {
+      const result = await UserModel.register(req.body);
+      return res.status(result.code).json(result.json);
+    } catch(error) {
+      console.log(error);
+      return res.status(400).send("Insert user failed");
+    }
   });
 
   loginUser = asyncHandler(async (req, res) => {
@@ -36,8 +42,13 @@ class UserController {
   })
   
   updateUser = asyncHandler( async(req, res) => {
-    const result = await UserModel.updateUser(req.body);
-    return res.status(result.code).json(result.json);
+    try {
+      const result = await UserModel.updateUser(req.body);
+      return res.status(result.code).json(result.json);
+    } catch(error) {
+      console.log(error);
+      return res.status(400).send("Update user failed");
+    }
   })
 
   updateOtherUser = asyncHandler( async(req, res) => {
@@ -46,12 +57,19 @@ class UserController {
       return res.status(200).send("Updated user successfully");
     } catch(error) {
       console.log(error);
+      return res.status(400).send("Update user failed");
     }
   })
 
   deleteUser = asyncHandler( async(req, res) => {
-    await UserModel.delete(req.body.id);
-    return res.status(200).send(`Deleted user`);
+    try {
+      await UserModel.delete(req.body.id);
+      return res.status(200).send(`Deleted user`);
+    } catch(error) {
+      console.log(error);
+      return res.status(400).send("Delete user failed");
+    }
+
   })
 }
 

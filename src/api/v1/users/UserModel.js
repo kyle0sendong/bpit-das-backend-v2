@@ -1,4 +1,4 @@
-const ApiBaseModel = require("@api/ApiBaseModel");
+const ApiBaseModel = require("@api/ApiBaseModel.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -117,35 +117,106 @@ class UserModel extends ApiBaseModel {
   }
 
   async updateUser(newData) {
-
-    await this.update(newData);
-    //create user data
-    const updateData = await this.getUserById(newData.id);
-
-    for(let column of Object.keys(newData)) {
-      if(column == "id") continue;
-      updateData[column] = newData[column]
+    try {
+      // Validate input data
+      if (!newData || !newData.id) {
+        throw new Error('User ID is required');
+      }
+  
+      // Check if password change is attempted
+      const isPasswordChange = newData.current_password && newData.new_password;
+  
+      // If password change is attempted, validate current password
+      if (isPasswordChange) {
+        // Fetch existing user to verify current password
+        const existingUser = await this.getUserById(newData.id);
+        
+        // Compare current password (assuming you're using bcrypt)
+        const isPasswordValid = await bcrypt.compare(
+          newData.current_password, 
+          existingUser.password
+        );
+  
+        if (!isPasswordValid) {
+          return { 
+            code: 401, 
+            json: { message: "Current password is incorrect" } 
+          };
+        }
+  
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newData.new_password, 10);
+        newData.password = hashedPassword;
+  
+        // Remove password-related fields not needed for database update
+        delete newData.current_password;
+        delete newData.new_password;
+      }
+  
+      // Prepare update data (exclude sensitive fields)
+      const updateFields = ['first_name', 'last_name', 'email', 'password'];
+      const filteredData = {};
+  
+      // Only include specified fields that are present
+      updateFields.forEach(field => {
+        if (newData[field] !== undefined) {
+          filteredData[field] = newData[field];
+        }
+      });
+  
+      // Perform the update
+      await this.update({
+        id: newData.id,
+        ...filteredData
+      });
+  
+      // Fetch updated user data
+      const updateData = await this.getUserById(newData.id);
+  
+      // Generate JWT token
+      const user = {
+        id: updateData.id,
+        firstName: updateData.first_name,
+        lastName: updateData.last_name,
+        username: updateData.username,
+        email: updateData.email,
+        role: updateData.role,
+      }
+  
+      const token = jwt.sign(user, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+      });
+  
+      return { 
+        code: 200, 
+        json: {
+          message: isPasswordChange 
+            ? "Account updated successfully. Password changed." 
+            : "Account updated successfully",
+          token,
+          user
+        }
+      };
+  
+    } catch (error) {
+      console.error('Update user error:', error);
+  
+      // Handle specific error types
+      if (error.name === 'ValidationError') {
+        return { 
+          code: 400, 
+          json: { message: error.message } 
+        };
+      }
+  
+      return { 
+        code: 500,
+        json: { 
+          message: "An error occurred while updating the account",
+          error: error.message 
+        } 
+      };
     }
-
-    // Generate JWT token
-    const user = {
-      id: updateData.id,
-      firstName: updateData.first_name,
-      lastName: updateData.last_name,
-      username: updateData.username,
-      email: updateData.email,
-      role: updateData.role,
-    }
-
-    const token = jwt.sign(user, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-
-    return { code: 200, json: {
-      message: "Login successful",
-      token,
-      user
-    }};
   }
 
   async register(data) {

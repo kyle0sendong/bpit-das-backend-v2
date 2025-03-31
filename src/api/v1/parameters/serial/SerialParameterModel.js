@@ -1,4 +1,4 @@
-const ParameterBaseModel = require("../ParameterBaseModel");
+const ParameterBaseModel = require("../ParameterBaseModel.js");
 
 class SerialParameterModel extends ParameterBaseModel {
 

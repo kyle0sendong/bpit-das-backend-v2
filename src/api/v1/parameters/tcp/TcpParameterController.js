@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const TcpParameterModel = require("./TcpParameterModel");
-const { createRandomNumber } = require("@utils/rng");
+const TcpParameterModel = require("./TcpParameterModel.js");
+const { createRandomNumber } = require("@utils/rng.js");
 
 class TcpParameterController {
 

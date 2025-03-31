@@ -1,11 +1,12 @@
-const {toSnakeCase} = require("@utils/strings");
-const { getDateTimeNow } = require("@utils/date");
-const { readModbusData, cleanFormula } = require("@utils/dataProcessing");
 const math = require('mathjs');
 const ModbusRTU = require("modbus-serial");
 
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
+const {toSnakeCase} = require("@utils/strings.js");
+const { getDateTimeNow } = require("@utils/date.js");
+const { readModbusData, cleanFormula } = require("@utils/dataProcessing.js");
+
+const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel.js");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
 
 const tcpOneMinutePolling = async (clientConnections, timebaseId, analyzers, parameters, accumulator) => {
 

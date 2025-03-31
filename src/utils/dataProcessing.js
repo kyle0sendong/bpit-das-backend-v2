@@ -116,38 +116,98 @@ const readModbusData = async (client, parameter) => {
 
 const readModbusDataAsciiMode = async (client, parameter) => {
   try {
-      if (!client) throw new Error("No client connection available");
+    if (!client) throw new Error("No client connection available");
 
-      const address = parameter.start_register;
-      const quantity = parameter.quantity;
-      const deviceId = parameter.device_address;
-      const functionCode = input.match(/0x([0-9A-Fa-f]{2})/);
-      // Construct ASCII Modbus command (Function Code 03 = Read Holding Registers)
-      const command = `:${deviceId.toString(16).padStart(2, "0")}${functionCode}${address.toString(16).padStart(4, "0")}${quantity.toString(16).padStart(4, "0")}CRLF`;
+    const address = parameter.start_register;
+    const quantity = parameter.quantity;
+    const deviceId = parameter.device_address;
+    const functionCode = parameter.function_code.split(" ")[0] || 0x03; // Default to Read Holding Registers
+    
+    // Format values as hex strings
+    const deviceIdHex = deviceId.toString(16).padStart(2, "0");
+    const functionCodeHex = functionCode.toString(16).padStart(2, "0");
+    const addressHex = address.toString(16).padStart(4, "0");
+    const quantityHex = quantity.toString(16).padStart(4, "0");
+    
+    // Build message without LRC
+    const message = `${deviceIdHex}${functionCodeHex}${addressHex}${quantityHex}`;
+    
+    // Calculate LRC
+    const lrc = calculateLRC(message);
+    
+    // Construct complete ASCII Modbus command
+    const command = `:${message}${lrc}\r\n`;
 
-      console.log(`Sending ASCII command: ${command}`);
+    console.log(`Sending ASCII command: ${command}`);
 
-      // Send command to serial port and read response from the serial device
-      await client.write(command);
-      const response = await client.read();
+    // Send command to serial port and read response
+    await client.write(command);
+    const response = await client.read();
 
-      console.log(`Received ASCII response: ${response}`);
+    console.log(`Received ASCII response: ${response}`);
 
-      // Extract data from response
-      if (response.startsWith(":")) {
-          // Convert response from HEX to numeric data
-          const data = parseInt(response.substring(7, 11), 16);
-          return data;
+    // Process response
+    if (response.startsWith(":")) {
+      // Remove start character ":" and end characters CR LF
+      const cleanResponse = response.substring(1, response.length - 2);
+      
+      // Check response LRC
+      const responseLRC = cleanResponse.slice(-2);
+      const responseData = cleanResponse.slice(0, -2);
+      const calculatedLRC = calculateLRC(responseData);
+      
+      if (responseLRC !== calculatedLRC) {
+        throw new Error("LRC check failed");
       }
+      
+      // Extract device ID and function code
+      const responseDeviceId = responseData.substring(0, 2);
+      const responseFunctionCode = responseData.substring(2, 4);
+      
+      // Check for exception response
+      if (parseInt(responseFunctionCode, 16) > 0x80) {
+        const exceptionCode = parseInt(responseData.substring(4, 6), 16);
+        throw new Error(`Modbus exception: ${exceptionCode}`);
+      }
+      
+      // Get byte count
+      const byteCount = parseInt(responseData.substring(4, 6), 16);
+      
+      // Extract data values
+      const dataHex = responseData.substring(6, 6 + byteCount * 2);
+      const values = [];
+      
+      // Parse each register (2 bytes per register)
+      for (let i = 0; i < dataHex.length; i += 4) {
+        values.push(parseInt(dataHex.substring(i, i + 4), 16));
+      }
+      
+      return values;
+    }
 
-      return response
-      throw new Error("Invalid ASCII response received");
+    throw new Error("Invalid ASCII response received");
 
   } catch (error) {
-      console.error("Error reading Modbus ASCII data:", error.message);
-      return null;
+    console.error("Error reading Modbus ASCII data:", error.message);
+    return null;
   }
 };
+
+// LRC calculation function
+function calculateLRC(data) {
+  let lrc = 0;
+  
+  // Convert hex string to bytes and sum
+  for (let i = 0; i < data.length; i += 2) {
+    lrc += parseInt(data.substring(i, i + 2), 16);
+  }
+  
+  // Two's complement
+  lrc = ((lrc ^ 0xFF) + 1) & 0xFF;
+  
+  // Return as hex string
+  return lrc.toString(16).padStart(2, "0");
+}
 
 
 

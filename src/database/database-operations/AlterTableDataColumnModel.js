@@ -1,4 +1,4 @@
-const TimebaseModel = require("@api/v1/timebases/TimebaseModel");
+const TimebaseModel = require("@api/v1/timebases/TimebaseModel.js");
 const db = require("@database");
 
 class AlterTableDataColumnModel {

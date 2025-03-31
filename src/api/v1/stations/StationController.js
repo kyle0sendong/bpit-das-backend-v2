@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const StationModel = require('./StationModel');
+const StationModel = require('./StationModel.js');
 
 class StationController {
   

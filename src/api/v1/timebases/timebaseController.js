@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler')
-const timebaseModel = require('./timebaseModel')
+const timebaseModel = require('./TimebaseModel.js')
 
 class TimebaseController {
 

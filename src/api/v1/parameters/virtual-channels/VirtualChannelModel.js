@@ -1,8 +1,8 @@
-const ParameterBaseModel = require("../ParameterBaseModel");
-const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
-const { toSnakeCase } = require("@utils/strings");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel");
+const ParameterBaseModel = require("../ParameterBaseModel.js");
+const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel.js");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
+const { toSnakeCase } = require("@utils/strings.js");
+const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
 
 class VirtualChannelModel extends ParameterBaseModel {
   constructor() {

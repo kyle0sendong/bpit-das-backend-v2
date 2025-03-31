@@ -1,5 +1,5 @@
-const ApiBaseModel = require("@api/ApiBaseModel");
-const TimebaseModel = require("@api/v1/timebases/TimebaseModel");
+const ApiBaseModel = require("@api/ApiBaseModel.js");
+const TimebaseModel = require("@api/v1/timebases/TimebaseModel.js");
 
 class CurrentValuesModel extends ApiBaseModel {
 

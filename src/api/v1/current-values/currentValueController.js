@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const CurrentValueModel = require("./CurrentValueModel");
+const CurrentValueModel = require("./CurrentValueModel.js");
 
 
 class CurrentValueController {

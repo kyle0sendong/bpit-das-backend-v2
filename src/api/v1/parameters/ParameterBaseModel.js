@@ -1,13 +1,13 @@
 
-const { toSnakeCase } = require("@utils/strings");
+const { toSnakeCase } = require("@utils/strings.js");
 
-const ApiBaseModel = require("@api/ApiBaseModel");
+const ApiBaseModel = require("@api/ApiBaseModel.js");
 
-const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel");
-const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel");
-const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel");
+const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel.js");
+const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel.js");
+const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel.js");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
+const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
 
 class ParameterBaseModel extends ApiBaseModel {
 
@@ -143,16 +143,13 @@ class ParameterBaseModel extends ApiBaseModel {
       if (key === 'id') continue;
       if (JSON.stringify(original[key]) !== JSON.stringify(updated[key])) return true;
     }
-    
     return false;
   }
 
   async updateParameter(data, type, user) {
 
       try {
-        console.log(data)
         const parameter = await this.getById(data.id);
-        console.log(parameter)
         // Process Log changes and tags
         let changes = `Updated '${parameter[0].name}' from `;
         let tags = "";
@@ -171,7 +168,9 @@ class ParameterBaseModel extends ApiBaseModel {
 
         for(let column of Object.keys(data)) {
           if(column == "id") continue;
-          changes += `(${column}: '${parameter[0][column]}' to '${data[column]}') `
+          if(parameter[0][column] != data[column]) {
+            changes += `(${column}: '${parameter[0][column]}' to '${data[column]}') `
+          }
         }
 
         // Process log data

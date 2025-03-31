@@ -1,11 +1,11 @@
-const {toSnakeCase} = require("@utils/strings");
-const { getDateTimeNow } = require("@utils/date");
-const { readModbusData, cleanFormula } = require("@utils/dataProcessing");
+const {toSnakeCase} = require("@utils/strings.js");
+const { getDateTimeNow } = require("@utils/date.js");
+const { readModbusData, cleanFormula } = require("@utils/dataProcessing.js");
 const ModbusRTU = require("modbus-serial");
 const math = require('mathjs');
 
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
+const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel.js");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
 
 const serialOneMinutePolling = async (clientConnections, timebaseId, analyzers, parameters, accumulator) => {
 
@@ -20,7 +20,7 @@ const serialOneMinutePolling = async (clientConnections, timebaseId, analyzers, 
         const clientIndex = clientConnections.findIndex((c) => c.name === `serial${analyzer.name}-${analyzer.id}`);
         let client = clientConnections[clientIndex];
 
-        // 🔄 Reconnect if client is missing or disconnected
+        // Reconnect if client is missing or disconnected
         if (!client || !client.client.isOpen) {
           console.warn(`Client not found or disconnected for Serial Analyzer: ${analyzer.name} (${analyzer.id}). Reconnecting...`);
 

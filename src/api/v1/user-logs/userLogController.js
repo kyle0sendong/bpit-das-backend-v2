@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const UserLogModel = require('./UserLogModel');
-const { getDateTodayToTomorrow } = require("@utils/date");
+const UserLogModel = require('./UserLogModel.js');
+const { getDateTodayToTomorrow } = require("@utils/date.js");
 
 class UserLogController {
 

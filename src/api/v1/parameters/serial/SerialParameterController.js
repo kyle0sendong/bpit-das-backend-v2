@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const SerialParameterModel = require("./SerialParameterModel");
-const { createRandomNumber } = require("@utils/rng");
+const SerialParameterModel = require("./SerialParameterModel.js");
+const { createRandomNumber } = require("@utils/rng.js");
 
 class SerialParameterController {
 

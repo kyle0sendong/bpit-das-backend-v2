@@ -1,5 +1,5 @@
-const ApiBaseModel = require("@api/ApiBaseModel");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel");
+const ApiBaseModel = require("@api/ApiBaseModel.js");
+const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
 
 class AnalyzerBaseModel extends ApiBaseModel {
 
@@ -35,7 +35,9 @@ class AnalyzerBaseModel extends ApiBaseModel {
       let changes = `Updated ${type} Analyzer '${analyzerDetails[0].name}' `;
       for(let column of Object.keys(data)) {
         if(column == "id") continue;
-        changes += `(${column}: '${analyzerDetails[0][column]}' to '${data[column]} ') `
+        if(analyzerDetails[0][column] != data[column]) {
+          changes += `(${column}: '${analyzerDetails[0][column]}' to '${data[column]} ') `
+        }
       }
 
       // Create Log Data

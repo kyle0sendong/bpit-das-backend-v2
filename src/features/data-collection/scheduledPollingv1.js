@@ -1,22 +1,26 @@
+// only a reference, use PollingScheduler.js for polling
+
+
+
 const cron = require('node-cron');
-const TimebaseModel = require("@apiV1/timebases/TimebaseModel");
+const TimebaseModel = require("@apiV1/timebases/TimebaseModel.js");
 
-const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel");
-const TcpParameterModel = require("@apiV1/parameters/tcp/TcpParameterModel");
-const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel");
-const SerialParameterModel = require("@apiV1/parameters/serial/SerialParameterModel");
+const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel.js");
+const TcpParameterModel = require("@apiV1/parameters/tcp/TcpParameterModel.js");
+const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel.js");
+const SerialParameterModel = require("@apiV1/parameters/serial/SerialParameterModel.js");
 
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel");
-const VirtualChannelModel = require("@apiV1/parameters/virtual-channels/VirtualChannelModel");
+const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel.js");
+const VirtualChannelModel = require("@apiV1/parameters/virtual-channels/VirtualChannelModel.js");
 
-const tcpOneMinutePolling = require("./modbus-tcp/tcpOneMinutePolling");
-const tcpAboveOneMinutePolling = require("./modbus-tcp/tcpAboveOneMinutePolling");
+const tcpOneMinutePolling = require("./modbus-tcp/tcpOneMinutePolling.js");
+const tcpAboveOneMinutePolling = require("./modbus-tcp/tcpAboveOneMinutePolling.js");
 
-const serialOneMinutePolling = require("./serial/serialOneMinutePolling");
-const serialAboveOneMinutePolling = require("./serial/serialAboveOneMinutePolling");
+const serialOneMinutePolling = require("./serial/serialOneMinutePolling.js");
+const serialAboveOneMinutePolling = require("./serial/serialAboveOneMinutePolling.js");
 
-const vcOneMinutePolling = require("./virtual-channels/vcOneMinutePolling");
-const vcAboveOneMinutePolling = require("./virtual-channels/vcAboveOneMinutePolling");
+const vcOneMinutePolling = require("./virtual-channels/vcOneMinutePolling.js");
+const vcAboveOneMinutePolling = require("./virtual-channels/vcAboveOneMinutePolling.js");
 
 const { getDateTimeNow, getDateRange } = require("@utils/date");
 
@@ -47,6 +51,7 @@ const createCronJobs = async (timebases, tcpAnalyzers, tcpParameters, serialAnal
 
   const oneMinuteTimebase = timebases.find(item => item.timebase === 1);
   const currentDataTimebase = timebases.find(item => item.timebase === 0);
+
   const tcpClientConnections = await createTcpConnections(tcpAnalyzers);
   const tcpAccumulator = createAccumulator(tcpAnalyzers, tcpParameters, 'tcp');
 

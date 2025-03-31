@@ -1,16 +1,12 @@
 const ModbusRTU = require("modbus-serial");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel");
-const { toSnakeCase } = require("@utils/strings");
+const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
+const { toSnakeCase } = require("@utils/strings.js");
 
 const setupCurrentValues = async (analyzers, parameters, timebases, type) => {
   for(let analyzer of analyzers) {
     const filteredParameters = parameters.filter((parameter) => analyzer.id === parameter.analyzer_id && parameter.enable === 1);
     for(let parameter of filteredParameters) {
-      await CurrentValueModel.insert({
-        timebase_id: 0,
-        parameter_id: parameter.id,
-        [`${type}_id`]: analyzer.id
-      })
+
       for(let timebase of timebases) {
         // create rows for the current values if it does not exist yet
         const isExist = await CurrentValueModel.checkCurrentValueExist(parameter.id, type, analyzer.id, timebase.id)
@@ -116,7 +112,6 @@ const createSerialConnections = async (analyzers) => {
 }
 
 const reconnectSerialClient = async (clientConnections, clientIndex, analyzer) => {
-  console.log("asdasdasdaasdasds")
   try {
     const newClient = new ModbusRTU();
     await newClient.connectRTUBuffered(analyzer.port_name, {
