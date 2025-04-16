@@ -1,6 +1,7 @@
-const ApiBaseModel = require("@api/ApiBaseModel.js");
+const ApiBaseModel = require("../../ApiBaseModel.js");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
+const config = require("../../../config.js");
 
 class UserModel extends ApiBaseModel {
   constructor() {
@@ -98,7 +99,7 @@ class UserModel extends ApiBaseModel {
     }
 
     // Generate JWT token
-    const token = jwt.sign(userData, process.env.JWT_SECRET, {
+    const token = jwt.sign(userData, config.JWT_SECRET, {
       expiresIn: "30d",
     });
 
@@ -183,7 +184,7 @@ class UserModel extends ApiBaseModel {
         role: updateData.role,
       }
   
-      const token = jwt.sign(user, process.env.JWT_SECRET, {
+      const token = jwt.sign(user, config.JWT_SECRET, {
         expiresIn: "30d",
       });
   
@@ -249,7 +250,7 @@ class UserModel extends ApiBaseModel {
   }
 
   async logOut(token) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     const query = `
       INSERT INTO ${this.blacklistedTokenTable} (token, expires_at) VALUES (?, ?)
     `;

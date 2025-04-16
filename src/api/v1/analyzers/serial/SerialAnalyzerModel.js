@@ -1,5 +1,5 @@
 const AnalyzerBaseModel = require("../AnalyzerBaseModel.js");
-const { SerialPort, SerialPortInfo } = require('serialport');
+const SerialPort = require('serialport');
 
 class SerialAnalyzerModel extends AnalyzerBaseModel {
 
@@ -8,10 +8,15 @@ class SerialAnalyzerModel extends AnalyzerBaseModel {
 	}
 
   async getAvailablePorts() {
-    const ports = await SerialPort.list();
-    return ports;
+    try {
+      const ports = await SerialPort.list();
+      return ports;
+    } catch (error) {
+      console.error('Error listing serial ports:', error);
+    }
   }
   
+
 }
 
 module.exports = new SerialAnalyzerModel();

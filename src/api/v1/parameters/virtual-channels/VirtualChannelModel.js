@@ -1,8 +1,8 @@
 const ParameterBaseModel = require("../ParameterBaseModel.js");
-const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel.js");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
-const { toSnakeCase } = require("@utils/strings.js");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
+const AlterTableDataColumnModel = require("../../../../database/database-operations/AlterTableDataColumnModel.js");
+const CurrentValueModel = require("../../current-values/CurrentValueModel.js");
+const { toSnakeCase } = require("../../../../utils/strings.js");
+const UserLogModel = require("../../user-logs/UserLogModel.js");
 
 class VirtualChannelModel extends ParameterBaseModel {
   constructor() {
@@ -27,7 +27,7 @@ class VirtualChannelModel extends ParameterBaseModel {
 
     try {
       // delete columns from data tables
-      const columnName = toSnakeCase(`vc_${parameter[0].name}`)
+      const columnName = toSnakeCase(`vc_${parameter[0].name}`);
       await Promise.all([
         this.executeQuery(query, [id]),
         AlterTableDataColumnModel.deleteDataColumn({columnName}),
@@ -35,7 +35,7 @@ class VirtualChannelModel extends ParameterBaseModel {
       ])
       return UserLogModel.insert(logData);
     } catch(error) {
-      console.error(`Error inserting parameter: `, error);
+      console.error(`Error deleting parameter: `, error);
     }
   }
 

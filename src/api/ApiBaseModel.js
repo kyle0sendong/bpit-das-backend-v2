@@ -1,4 +1,4 @@
-const db = require("@database");
+const db = require("../database/database.js");
 
 class BaseApiModel {
   constructor(tableName) {

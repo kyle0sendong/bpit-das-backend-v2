@@ -1,5 +1,5 @@
 const express = require("express");
-const routes = require("@routes");
+const routes = require("./routes");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler.js");
 const CustomError = require("./middleware/CustomError.js");

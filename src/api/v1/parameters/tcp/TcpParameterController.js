@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const TcpParameterModel = require("./TcpParameterModel.js");
-const { createRandomNumber } = require("@utils/rng.js");
+const { createRandomNumber } = require("../../../../utils/rng.js");
+const pollingScheduler = require("../../../../features/data-collection/PollingScheduler");
 
 class TcpParameterController {
 
@@ -33,6 +34,7 @@ class TcpParameterController {
     }
 
     await TcpParameterModel.insertParameter(allParameters, 'tcp', req.user, numberOfParameter, tcpId);
+    pollingScheduler.start();
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
   })
 
@@ -48,10 +50,11 @@ class TcpParameterController {
         
         // Check if this parameter has actually changed
         if (TcpParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
-            await TcpParameterModel.updateParameter(paramUpdate, 'tcp', req.user);
+          await TcpParameterModel.updateParameter(paramUpdate, 'tcp', req.user);
+          pollingScheduler.start();
         } else {
-            // No changes for this parameter
-            console.log("no changes on ", paramUpdate.name)
+          // No changes for this parameter
+          console.log("no changes on ", paramUpdate.name);
         }
       } catch(error) {
         console.log(error)
@@ -62,8 +65,9 @@ class TcpParameterController {
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await TcpParameterModel.deleteParameter(req.query.id, 'tcp', req.user)
-    return res.status(200).send(`Deleted parameter '${req.query.name}' from `)
+    await TcpParameterModel.deleteParameter(req.query.id, 'tcp', req.user);
+    pollingScheduler.start();
+    return res.status(200).send(`Deleted parameter '${req.query.name}' from `);
   })
 
 }

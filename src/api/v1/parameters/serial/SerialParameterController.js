@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const SerialParameterModel = require("./SerialParameterModel.js");
-const { createRandomNumber } = require("@utils/rng.js");
+const { createRandomNumber } = require("../../../../utils/rng.js");
+const pollingScheduler = require("../../../../features/data-collection/PollingScheduler");
 
 class SerialParameterController {
 
@@ -32,6 +33,7 @@ class SerialParameterController {
     }
 
     await SerialParameterModel.insertParameter(allParameters, 'serial', req.user, numberOfParameter, serialId);
+    pollingScheduler.start();
     return res.status(200).send(`Inserted ${req.body.name} parameter`)
   })
 
@@ -46,7 +48,8 @@ class SerialParameterController {
         if (!currentParameter) continue;
         
         if (SerialParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
-            await SerialParameterModel.updateParameter(paramUpdate, 'serial', req.user);
+          await SerialParameterModel.updateParameter(paramUpdate, 'serial', req.user);
+          pollingScheduler.start();
         } else {
             console.log("No changes on ", paramUpdate.name)
         }
@@ -59,8 +62,9 @@ class SerialParameterController {
   })
 
   deleteParameter = asyncHandler(async(req, res) => {
-    await SerialParameterModel.deleteParameter(req.query.id, 'serial', req.user)
-    return res.status(200).send(`Deleted parameter '${req.query.name}' from `)
+    await SerialParameterModel.deleteParameter(req.query.id, 'serial', req.user);
+    pollingScheduler.start();
+    return res.status(200).send(`Deleted parameter '${req.query.name}' from `);
   })
 
 }

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const AnalyzerDataModel = require("./AnalyzerDataModel.js");
-const { getDateTodayToTomorrow } = require("@utils/date.js");
+const { getDateTodayToTomorrow } = require("../../../utils/date.js");
 
 class AnalyzerDataController {
   

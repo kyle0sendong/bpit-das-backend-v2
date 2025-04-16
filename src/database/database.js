@@ -1,21 +1,21 @@
 const mysql = require("mysql2");
 const dotenv = require("dotenv").config()
+const config = require("../config");
+// const pool = mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     port: "3306",
+//     password: "maskinano",
+//     database: "bpitdas"
+// })
 
 const pool = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    port: "3306",
-    password: "maskinano",
-    database: "bpitdas"
+  host: config.LOCAL_DB_HOST,
+  user: config.LOCAL_DB_USER,
+  password: config.LOCAL_DB_PASSWORD,
+  port: config.LOCAL_DB_PORT,
+  database: config.LOCAL_DB_NAME
 })
-
-// const pool = mysql.createConnection({
-//   host: process.env.LOCAL_DB_HOST,
-//   user: process.env.LOCAL_DB_USER,
-//   password: process.env.LOCAL_DB_PASSWORD,
-//   port: process.env.LOCAL_DB_PORT,
-//   database: process.env.LOCAL_DB_NAME
-// })
 
 pool.connect((err) => {
     if (err) throw err;

@@ -1,6 +1,6 @@
 const ModbusRTU = require("modbus-serial");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
-const { toSnakeCase } = require("@utils/strings.js");
+const CurrentValueModel = require("../../api/v1/current-values/CurrentValueModel.js");
+const { toSnakeCase } = require("../../utils/strings.js");
 
 const setupCurrentValues = async (analyzers, parameters, timebases, type) => {
   for(let analyzer of analyzers) {
@@ -65,7 +65,7 @@ const createTcpConnections = async (analyzers) => {
           unitId: analyzer.device_address, 
           timeout: 5000, 
           autoReconnect: true,
-          reconnectTimeout: 2000
+          reconnectTimeout: 2000,
       });
 
       console.log(`Connected to ${analyzer.name} (${analyzer.host_address}:${analyzer.port})`);

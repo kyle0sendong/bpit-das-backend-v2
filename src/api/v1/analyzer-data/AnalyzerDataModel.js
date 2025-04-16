@@ -1,7 +1,7 @@
-const ApiBaseModel = require("@api/ApiBaseModel.js");
-const ParameterBaseModel = require("@api/v1/parameters/ParameterBaseModel.js");
-const VirtualChannelModel = require("@api/v1/parameters/virtual-channels/VirtualChannelModel.js");
-const { toSnakeCase } = require("@utils/strings.js");
+const ApiBaseModel = require("../../ApiBaseModel.js");
+const ParameterBaseModel = require("../parameters/ParameterBaseModel.js");
+const VirtualChannelModel = require("../parameters/virtual-channels/VirtualChannelModel.js");
+const { toSnakeCase } = require("../../../utils/strings.js");
 
 class AnalyzerDataModel extends ApiBaseModel{
   

@@ -1,9 +1,9 @@
-const {toSnakeCase} = require("@utils/strings.js");
-const { getDateTimeNow } = require("@utils/date.js");
-const { delay } = require("@utils/delay.js")
+const {toSnakeCase} = require("../../../utils/strings.js");
+const { getDateTimeNow } = require("../../../utils/date.js");
+const { delay } = require("../../../utils/delay.js")
 const math = require('mathjs');
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel.js");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
+const AnalyzerDataModel = require("../../../api/v1/analyzer-data/AnalyzerDataModel.js");
+const CurrentValueModel = require("../../../api/v1/current-values/CurrentValueModel.js");
 
 const serialAboveOneMinutePolling = async (dateRange, timebase, analyzers, parameters) => {
 

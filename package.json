@@ -3,14 +3,21 @@
   "version": "1.0.0",
   "main": "./src/server.js",
   "scripts": {
-    "dev": "nodemon ./src/server.js"
+    "dev": "nodemon ./src/server.js",
+    "build": "pkg ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "bin": "./src/server.js",
+  "pkg": {
+    "targets": [
+      "node18-win-x64"
+    ],
+    "assets": [
+      "./node_modules/@serialport/bindings-cpp/**",
+      "./node_modules/@serialport/**/*.node"
+    ]
+  },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -18,26 +25,12 @@
     "jsonwebtoken": "^9.0.2",
     "mathjs": "^14.3.1",
     "modbus-serial": "^8.0.18",
-    "module-alias": "^2.2.3",
     "mysql2": "^3.12.0",
     "node-cron": "^3.0.3",
-    "pm2": "^5.4.3",
-    "serialport": "^13.0.0"
-  },
-  "_moduleAliases": {
-    "@root": ".",
-    "@src": "./src",
-    "@apiV1": "./src/api/v1",
-    "@api": "./src/api",
-    "@utils": "./src/utils",
-    "@app": "./src/app.js",
-    "@database": "./src/database/database.js",
-    "@middleware": "./src/middleware",
-    "@routes": "./src/routes.js",
-    "@features": "./src/features",
-    "@databaseOperations": "./src/database/database-operations"
+    "serialport": "^10.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "pkg": "^5.8.1"
   }
 }

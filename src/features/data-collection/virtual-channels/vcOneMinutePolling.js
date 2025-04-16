@@ -1,10 +1,10 @@
 const math = require('mathjs');
 
-const { toSnakeCase } = require("@utils/strings.js");
-const { getDateTimeNow } = require("@utils/date.js");
-const { delay } = require("@utils/delay.js");
-const AnalyzerDataModel = require("@apiV1/analyzer-data/AnalyzerDataModel.js");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
+const { toSnakeCase } = require("../../../utils/strings.js");
+const { getDateTimeNow } = require("../../../utils/date.js");
+const { delay } = require("../../../utils/delay.js");
+const AnalyzerDataModel = require("../../../api/v1/analyzer-data/AnalyzerDataModel.js");
+const CurrentValueModel = require("../../../api/v1/current-values/CurrentValueModel.js");
 
 const getVirtualChannelVariables = async (datetime, virtualChannel, tcpParameters, serialParameters) => {
   const result = {};

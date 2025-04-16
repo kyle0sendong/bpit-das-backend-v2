@@ -109,7 +109,7 @@ const readModbusData = async (client, parameter) => {
     const decodedData = await decodeData(data, parameter.format);
     return decodedData;
   } catch (error) {
-    console.error("Error reading Modbus data:", error);
+    console.error(`${parameter.name} Error reading Modbus data:`, error);
     return null;
   }
 };
@@ -208,8 +208,5 @@ function calculateLRC(data) {
   // Return as hex string
   return lrc.toString(16).padStart(2, "0");
 }
-
-
-
 
 module.exports = { readModbusData, decodeData, cleanFormula };

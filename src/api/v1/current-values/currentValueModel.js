@@ -1,5 +1,5 @@
-const ApiBaseModel = require("@api/ApiBaseModel.js");
-const TimebaseModel = require("@api/v1/timebases/TimebaseModel.js");
+const ApiBaseModel = require("../../ApiBaseModel.js");
+const TimebaseModel = require("../timebases/TimebaseModel.js");
 
 class CurrentValuesModel extends ApiBaseModel {
 
@@ -96,8 +96,8 @@ class CurrentValuesModel extends ApiBaseModel {
     if(type === 'vc') parameterId = 0;
     const timebases = await TimebaseModel.getAllTimebases();
     const queries = timebases.map(async (timebase) => {
-      const currentValue = await this.getCurrentValue({timebaseId: timebase.id, parameterId, analyzerId}, type)
-      if(currentValue) return await this.delete(currentValue[0].id);
+      const currentValue = await this.getCurrentValue({timebaseId: timebase.id, parameterId, analyzerId}, type);
+      if(currentValue.length > 0) return await this.delete(currentValue[0].id);
       return null;
     });
     return await Promise.all(queries);

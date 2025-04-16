@@ -1,5 +1,5 @@
-const ApiBaseModel = require("@api/ApiBaseModel.js");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
+const ApiBaseModel = require("../../ApiBaseModel.js");
+const UserLogModel = require("../user-logs/UserLogModel.js");
 
 class AnalyzerBaseModel extends ApiBaseModel {
 

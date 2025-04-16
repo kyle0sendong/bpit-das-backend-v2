@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const VirtualChannelModel = require('./VirtualChannelModel.js');
-const { createRandomNumber } = require("@utils/rng.js");
+const { createRandomNumber } = require("../../../../utils/rng.js");
+const pollingScheduler = require("../../../../features/data-collection/PollingScheduler");
 
 class VirtualChannelController {
 
@@ -25,6 +26,7 @@ class VirtualChannelController {
     }
 
     await VirtualChannelModel.insertParameter(allParameters, "vc", req.user, numberOfParameter);
+    pollingScheduler.start();
     return res.status(200).send(`Inserted Virtual Channel`);
   })
   
@@ -40,10 +42,11 @@ class VirtualChannelController {
         
         // Check if this parameter has actually changed
         if (VirtualChannelModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
-            await VirtualChannelModel.updateParameter(paramUpdate, 'vc', req.user);
+          await VirtualChannelModel.updateParameter(paramUpdate, 'vc', req.user);
+          pollingScheduler.start();
         } else {
-            // No changes for this parameter
-            console.log("no changes on ", paramUpdate.name)
+          // No changes for this parameter
+          console.log("no changes on ", paramUpdate.name)
         }
       } catch(error) {
         console.log(error)
@@ -55,6 +58,7 @@ class VirtualChannelController {
   
   deleteVirtualChannel = asyncHandler( async(req, res) => {
     await VirtualChannelModel.deleteVirtualChannel(req.query.id, req.user);
+    pollingScheduler.start();
     return res.status(200).send(`Deleted Virtual Channel`);
   })
 }

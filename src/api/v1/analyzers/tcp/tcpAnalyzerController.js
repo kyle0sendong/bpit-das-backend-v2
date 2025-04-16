@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const TcpAnalyzerModel = require("./TcpAnalyzerModel");
-const pollingScheduler = require("@features/data-collection/PollingScheduler");
+const pollingScheduler = require("../../../../features/data-collection/PollingScheduler");
 
 class TcpAnalyzerController {
   

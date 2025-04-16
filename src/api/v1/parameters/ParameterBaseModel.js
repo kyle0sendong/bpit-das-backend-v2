@@ -1,13 +1,13 @@
 
-const { toSnakeCase } = require("@utils/strings.js");
+const { toSnakeCase } = require("../../../utils/strings.js");
 
-const ApiBaseModel = require("@api/ApiBaseModel.js");
+const ApiBaseModel = require("../../ApiBaseModel.js");
 
-const AlterTableDataColumnModel = require("@databaseOperations/AlterTableDataColumnModel.js");
-const TcpAnalyzerModel = require("@apiV1/analyzers/tcp/TcpAnalyzerModel.js");
-const SerialAnalyzerModel = require("@apiV1/analyzers/serial/SerialAnalyzerModel.js");
-const CurrentValueModel = require("@apiV1/current-values/CurrentValueModel.js");
-const UserLogModel = require("@apiV1/user-logs/UserLogModel.js");
+const AlterTableDataColumnModel = require("../../../database/database-operations/AlterTableDataColumnModel.js");
+const TcpAnalyzerModel = require("../analyzers/tcp/TcpAnalyzerModel.js");
+const SerialAnalyzerModel = require("../analyzers/serial/SerialAnalyzerModel.js");
+const CurrentValueModel = require("../current-values/CurrentValueModel.js");
+const UserLogModel = require("../user-logs/UserLogModel.js");
 
 class ParameterBaseModel extends ApiBaseModel {
 
@@ -132,7 +132,7 @@ class ParameterBaseModel extends ApiBaseModel {
       return UserLogModel.insert(logData);
 
     } catch(error) {
-      console.error(`Error inserting parameter: `, error);
+      console.error(`Error deleting parameter: `, error);
     }
   }
 

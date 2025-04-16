@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const timebaseModel = require('./TimebaseModel.js')
+const pollingScheduler = require("../../../features/data-collection/PollingScheduler");
 
 class TimebaseController {
 
@@ -15,6 +16,7 @@ class TimebaseController {
 
   updateTimebase = asyncHandler(async(req, res) => {
     await timebaseModel.updateTimebase(req.body);
+    pollingScheduler.start();
     return res.status(201).send('Updated timebase data');
   })
 

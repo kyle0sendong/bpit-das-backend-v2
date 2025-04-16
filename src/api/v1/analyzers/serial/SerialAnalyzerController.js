@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const SerialAnalyzerModel = require("./SerialAnalyzerModel.js");
-const pollingScheduler = require("@features/data-collection/PollingScheduler.js");
+const pollingScheduler = require("../../../../features/data-collection/PollingScheduler.js");
 
 class SerialAnalyzerController {
   

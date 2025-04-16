@@ -1,8 +1,9 @@
-require("module-alias/register.js");
-const app = require("@app");
 const dotenv = require("dotenv").config();
 
-const port = process.env.PORT || 55001;
+const app = require("./app.js");
+const config = require("./config.js");
+
+const port = config.PORT || 50001;
 
 app.listen(port, () => {
     console.log(`Server running at ${port}`);

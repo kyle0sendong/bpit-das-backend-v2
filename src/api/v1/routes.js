@@ -14,8 +14,8 @@ const CurrentValueController = require("./current-values/CurrentValueController.
 const AnalyzerDataController = require("./analyzer-data/AnalyzerDataController.js");
 const UserController = require("./users/UserController.js");
 
-const validateToken = require("@middleware/validateToken.js");
-const checkPrivilege = require("@middleware/checkPrivilege.js");
+const validateToken = require("../../middleware/validateToken.js");
+const checkPrivilege = require("../../middleware/checkPrivilege.js");
 
 // unprotected routes
 router.get('/tcp-analyzers', TcpAnalyzerController.getAnalyzer);
