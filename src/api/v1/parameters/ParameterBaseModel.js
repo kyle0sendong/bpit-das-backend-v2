@@ -56,6 +56,7 @@ class ParameterBaseModel extends ApiBaseModel {
 
 
   async insertParameter(dataArray, type, user, numberOfParameter, analyzerId = 0) {
+    console.log(analyzerId, type)
     try {
       const columns = Object.keys(dataArray[0]);
       const values = dataArray.map(item => columns.map(col => item[col]));
@@ -68,7 +69,6 @@ class ParameterBaseModel extends ApiBaseModel {
       } else {
         analyzerDetails = [{name: 'Virtual Channels'}];
       }
-
       const logData = {
         username: user.username,
         full_name: user.name,

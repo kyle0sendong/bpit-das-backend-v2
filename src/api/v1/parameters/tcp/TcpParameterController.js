@@ -19,7 +19,7 @@ class TcpParameterController {
   })
 
   insertParameter = asyncHandler(async(req, res) => {
-
+    console.log(req.body)
     const numberOfParameter = req.body.number ?? 1;
     const tcpId = req.body.id ?? 0;
     const allParameters = [];
