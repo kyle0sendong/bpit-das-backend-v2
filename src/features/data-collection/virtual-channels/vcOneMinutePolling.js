@@ -55,7 +55,7 @@ const vcOneMinutePolling = async (timebaseId, virtualChannels, tcpParameters, se
           parameterId: 0,
           analyzerId: virtualChannel.id,
           timebaseId,
-          data: { current_value: -9999, datetime: datetime },
+          data: { current_value: -99999, datetime: datetime },
         };
 
         try {

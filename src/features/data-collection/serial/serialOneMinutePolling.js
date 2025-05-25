@@ -97,10 +97,9 @@ const serialOneMinutePolling = async (clientConnections, timebaseId, analyzers, 
               };
 
               if (parameterAccumulator.count >= sampling) {
-                const averageValue = parameterAccumulator.value / parameterAccumulator.count;
-                
+                let averageValue = parameterAccumulator.value / parameterAccumulator.count;
+                if (averageValue > 99999 || averageValue < -99999) averageValue = -99999;
                 await AnalyzerDataModel.updateData({[columnName]: averageValue,datetime: datetimeNow},1);
-
                 currentValue.data.current_value = averageValue;
                 await CurrentValueModel.updateCurrentValue(currentValue, "serial");
               } else {
