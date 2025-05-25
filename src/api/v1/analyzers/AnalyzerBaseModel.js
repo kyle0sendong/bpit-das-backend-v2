@@ -1,3 +1,5 @@
+const { toSnakeCase } = require("../../../utils/strings.js");
+
 const ApiBaseModel = require("../../ApiBaseModel.js");
 const UserLogModel = require("../user-logs/UserLogModel.js");
 
@@ -6,7 +8,6 @@ class AnalyzerBaseModel extends ApiBaseModel {
   constructor(tableName) {
     super(tableName);
   }
-
 
   async insertAnalyzer(data, type, user) {
     try {
@@ -60,6 +61,18 @@ class AnalyzerBaseModel extends ApiBaseModel {
     try {
       // get analyzer's data for proper logging
       const analyzerDetails = await this.getById(id);
+      const ParameterBaseModel = require('../parameters/ParameterBaseModel.js');
+      const AlterTableDataColumnModel = require('../../../database/database-operations/AlterTableDataColumnModel.js');
+      const parameterModel = new ParameterBaseModel(`${type.toLowerCase()}_parameters`);
+
+      const parameters = await parameterModel.getParametersByAnalyzerId(id);
+      const columnNames = parameters.map(param => 
+        toSnakeCase(`${type}${id}_${param.name}`)
+      );
+
+      if (columnNames.length > 0) {
+        await AlterTableDataColumnModel.deleteDataColumn({ columnName: columnNames });
+      }
 
       const logData = {
         username: user.username,

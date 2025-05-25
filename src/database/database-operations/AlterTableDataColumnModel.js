@@ -44,18 +44,29 @@ class AlterTableDataColumnModel {
   }
   
   async deleteDataColumn(data) {
-    
+    // Accept a single column or an array of columns
+    const columnList = Array.isArray(data.columnName)
+      ? data.columnName
+      : [data.columnName];
+
+    const safeCols = columnList.map(
+      (col) => `\`${col.toLowerCase()}\``
+    );
+
     const timebases = await TimebaseModel.getAllTimebases();
-    const queries = timebases.map((timebase) => {
-      if (timebase.timebase === 0) return null;
-      const tableName = `data_t${timebase.timebase}`;
-      const query = `
-        ALTER TABLE ${tableName} DROP ${data.columnName}
-      `;
-      return this.executeQuery(query);
-    });
-    return await Promise.all(queries);
+
+    const queries = timebases
+      .filter((t) => t.timebase !== 0)
+      .flatMap((t) => {
+        const tableName = `\`data_t${t.timebase}\``;
+        return safeCols.map((col) =>
+          this.executeQuery(`ALTER TABLE ${tableName} DROP COLUMN ${col}`)
+        );
+      });
+
+    return Promise.all(queries);
   }
+
   
 }
 
