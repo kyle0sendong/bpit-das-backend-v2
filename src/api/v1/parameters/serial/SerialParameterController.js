@@ -49,7 +49,7 @@ class SerialParameterController {
         
         if (SerialParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
           await SerialParameterModel.updateParameter(paramUpdate, 'serial', req.user);
-          pollingScheduler.start();
+          
         } else {
             console.log("No changes on ", paramUpdate.name)
         }
@@ -57,7 +57,7 @@ class SerialParameterController {
         console.log(error)
       }
     }
-
+    pollingScheduler.start();
     return res.status(200).send(`Updated parameters`)
   })
 

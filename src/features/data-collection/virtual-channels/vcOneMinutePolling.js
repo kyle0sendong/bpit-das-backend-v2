@@ -55,11 +55,12 @@ const vcOneMinutePolling = async (timebaseId, virtualChannels, tcpParameters, se
           parameterId: 0,
           analyzerId: virtualChannel.id,
           timebaseId,
-          data: { current_value: -99999, datetime: datetime },
+          data: { current_value: -9999, datetime: datetime },
         };
 
         try {
           const result = math.round(math.evaluate(virtualChannel.formula, virtualChannelVariables), 5);
+          if(result > 9999 || result < -9999) result = -9999; // above limits, make it invalid
           currentValue.data.current_value = result;
 
           await Promise.all([

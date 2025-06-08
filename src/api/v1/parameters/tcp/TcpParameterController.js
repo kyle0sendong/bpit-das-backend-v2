@@ -51,7 +51,6 @@ class TcpParameterController {
         // Check if this parameter has actually changed
         if (TcpParameterModel.hasParameterChanged(currentParameter[0], paramUpdate)) {
           await TcpParameterModel.updateParameter(paramUpdate, 'tcp', req.user);
-          pollingScheduler.start();
         } else {
           // No changes for this parameter
           console.log("no changes on ", paramUpdate.name);
@@ -61,6 +60,7 @@ class TcpParameterController {
       }
     }
 
+    pollingScheduler.start();
     return res.status(200).send(`Updated parameters`)
   })
 

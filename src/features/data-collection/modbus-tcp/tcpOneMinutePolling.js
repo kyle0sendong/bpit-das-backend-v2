@@ -87,18 +87,18 @@ const tcpOneMinutePolling = async (clientConnections, timebaseId, analyzers, par
                 analyzerId: analyzer.id,
                 parameterId: parameter.id,
                 timebaseId: timebaseId[1],
-                data: { current_value: -9999 },
+                data: { current_value: -9999, datetime: datetimeNow },
               };
               const sampling = (60 / parameter.request_interval) * (analyzer.sampling / 100);
 
               if (parameterAccumulator.count >= sampling) {
                 let averageValue = parameterAccumulator.value / parameterAccumulator.count;
-                if (averageValue > 99999 || averageValue < -99999) averageValue = -99999;
+                if (averageValue > 9999 || averageValue < -9999) averageValue = -9999;
                 await AnalyzerDataModel.updateData({[columnName]: averageValue, datetime: datetimeNow}, 1);
                 currentValue.data.current_value = averageValue;
                 await CurrentValueModel.updateCurrentValue(currentValue, "tcp");
               } else {
-                await AnalyzerDataModel.updateData({[columnName]: -99999, datetime: datetimeNow}, 1);
+                await AnalyzerDataModel.updateData({[columnName]: -9999, datetime: datetimeNow}, 1);
                 await CurrentValueModel.updateCurrentValue(currentValue, "tcp");
               }
               parameterAccumulator.count = 0;
