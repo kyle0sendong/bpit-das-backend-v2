@@ -14,7 +14,7 @@ class AnalyzerDataModel extends ApiBaseModel{
     try {
       // take all analyzer parameters
       const parameters = await this.parameterModel.getParametersByAnalyzerIdAndType(data.analyzer, data.analyzerType);
-
+      console.log(data)
       const columns = [
         "DATE_FORMAT(datetime, '%M %d, %Y %H:%i:%s') AS formatted_date, datetime", 
         ...parameters.map( (parameter) => toSnakeCase(`${data.analyzerType}${data.analyzer}_${parameter.name}`))
@@ -27,7 +27,8 @@ class AnalyzerDataModel extends ApiBaseModel{
         ORDER BY datetime DESC
       `;
 
-      return this.executeQuery(query, [data.from, data.to]);
+      const result = await this.executeQuery(query, [data.from, data.to]);
+      return result;
     } catch (error) {
       console.log(error)
     }
@@ -50,7 +51,7 @@ class AnalyzerDataModel extends ApiBaseModel{
         ORDER BY datetime DESC
       `;
 
-      return this.executeQuery(query, [data.from, data.to]);
+      return await this.executeQuery(query, [data.from, data.to]);
     } catch (error) {
       console.log(error)
     }
